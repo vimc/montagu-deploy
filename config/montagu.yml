@@ -1,0 +1,171 @@
+proxy:
+  # What hostname is Montagu being accessed as? This hostname must
+  # match the SSL certificate. Likely values include:
+  #
+  # * localhost (for local development and self-signed certificates)
+  # * support.montagu.dide.ic.ac.uk (for staging)
+  # * montagu.vaccineimpact.org (for production)
+  #
+  # (Was 'hostname')
+  host: localhost
+
+  # What port should montagu listen on? Note that this port must be
+  # the one that users browsers will be connecting to. In other words,
+  # if there is another layer wrapping around Montagu (e.g. if it is
+  # being deployed to a VM) the real port exposed on the physical
+  # machine must agree with the value here.
+  #
+  # (Was 'port')
+  port: 8443
+
+  # What SSL certificate should montagu use? This should be a pair of
+  # paths to the ssl certificate and key, or leave missing to generate
+  # a self signed certificates.  Use vault paths to pull data from the
+  # vault, e.g.
+  #
+  #   VAULT:/secret/ssl/production:key
+  #   VAULT:/secret/ssl/v2/production:key
+  ssl:
+    certificate: ~
+    key: ~
+
+data:
+  # Initial data source to be imported.  Valid options are:
+  #
+  # minimal: minimum required for montagu to work (enum tables and
+  #          permissions).
+  # test:    fake data, useful for testing
+  # restore: restore from bb8 backup
+  #
+  # (Was 'initial_data_source')
+  initial: minimal
+
+  # Should data in the database and orderly be persisted across
+  # deployments? If not, then the docker volumes will be deleted when
+  # montagu shuts down, which is very destructive. Should be true for
+  # production, and false for testing systems.
+  #
+  # (Was 'persist_data')
+  persist: false
+
+  # Should data in the database and orderly be updated on deployment?
+  # Only has an effect if all of:
+  #
+  # * persist is true
+  # * backup is false
+  # * initial is "restore"
+  #
+  # (Was 'update_on_deploy')
+  update: false
+
+  # Should data be backed up remotely using bb8? This should be
+  # enabled only on production, but we might not actually support this
+  # in the deploy tool, as previously discussed.
+  #
+  # (Was 'bb8_backup')
+  backup: false
+
+  # What is this for?
+  reports: false
+
+  # The type of annex database to set up. Valid options are:
+  #
+  # * fake:     Add a totally safe, but empty, version
+  # * readonly: Read-only access to the real annex
+  # * real:     Full access to the real annex
+  annex: fake
+
+  # Enable database replication? This is only needed on production, or
+  # for testing the backup system.
+  #
+  # (Was 'enable_db_replication')
+  replication: false
+
+  # Copy configured static files into the server container? This can
+  # be true only if source is restore
+  #
+  # (Was 'copy_static_files')
+  copy_static: false
+
+  # Copy guidance reports from orderly into the contrib portal
+  # container? This can be true only if source is restore.
+  #
+  # (Was 'include_guidance_reports')
+  copy_guidance: false
+
+# Open the browser after deployment? Is this still a thing that is wanted?
+#
+# (Was 'open_browser')
+open_browser: false
+
+# Which password group should montagu use for the database? Valid options are:
+#
+# * production: Passwords for production
+# * science:    Passwords for science
+# * fake:       Create fake passwords, so that password is the username
+#               (suitable for testing only!)
+#
+# (Was 'password_group')
+password_group: fake
+
+# Should we add a test user with access to all modelling groups? This
+# must be false on production!
+#
+# (Was 'add_test_user')
+add_test_user: false
+
+# Friendly name for this instance
+#
+# (Was 'instance_name')
+instance_name: teamcity
+
+# Should we notify the slack channel "#montagu-deploy"?
+#
+# (Was 'notify_channel', though that was the channel name)
+notify_slack: false
+
+# Should we use the high-performance database config? This uses more
+# memory and is not usable on teamcity or the staging VMs.
+#
+# (Was 'use_production_db_config')
+production_db: false
+
+# Configuration for the vault. This section was all contained within
+# 'vault_address'
+vault:
+  # Address of the vault server.  This should be a string if it is
+  # present.
+  addr: ~
+  auth:
+    # Authentication type - must be either "token" or the name of a
+    # supported authentication method.  These seem to be poorly
+    # documented in the hvac, but include "github" for github
+    # authentication.
+    #
+    # On a vault client object, see auth.implemented_class_names for
+    # a list, which is currently
+    #
+    #     azure, github, gcp, kubernetes, ldap, mfa, okta
+    method: token
+    # Arguments to the login method, as a set of key/value items.
+    # For token, use
+    #
+    # args:
+    #   token: <your token>
+    #
+    # For other methods see the login method - hvac's documentation
+    # unfortunately seems to be missing these entirely - one would
+    # assume that they'd be, say, here:
+    # https://hvac.readthedocs.io/en/stable/usage/auth_methods/github.html
+    #
+    # The docstring for each method hints at more, and there is the
+    # deprecated documentation here:
+    # https://hvac.readthedocs.io/en/stable/source/hvac_v1.html
+    #
+    # For github we require 'token'
+
+docker:
+  # Prefix for container names; we'll use {prefix}_{role} for names
+  prefix: montagu
+  # Name of the docker container to use
+  network: montagu_default
