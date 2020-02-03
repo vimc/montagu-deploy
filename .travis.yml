@@ -2,12 +2,14 @@ language: python
 python: 3.5
 
 install:
-  - pip3 install codecov pycodestyle
+  - pip3 install pytest-cov pycodestyle codecov
 
 script:
+  # This line is required if using a branch of constellation:
+  # - pip3 install git+https://github.com/reside-ic/constellation@reside-62#egg=constellation
   - pip3 install -r requirements.txt
-  - coverage run --source=montagu setup.py test
-  - pycodestyle montagu test
+  - pytest --cov=src
+  - pycodestyle .
 
 after_success:
   - codecov
