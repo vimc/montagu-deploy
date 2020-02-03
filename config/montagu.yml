@@ -29,7 +29,7 @@ proxy:
     certificate: ~
     key: ~
 
-data:
+db:
   # Initial data source to be imported.  Valid options are:
   #
   # minimal: minimum required for montagu to work (enum tables and
@@ -48,8 +48,8 @@ data:
   # (Was 'persist_data')
   persist: false
 
-  # Should data in the database and orderly be updated on deployment?
-  # Only has an effect if all of:
+  # Should data in the database be updated on deployment?  Only has an
+  # effect if all of:
   #
   # * persist is true
   # * backup is false
@@ -65,22 +65,41 @@ data:
   # (Was 'bb8_backup')
   backup: false
 
-  # What is this for?
-  reports: false
-
-  # The type of annex database to set up. Valid options are:
-  #
-  # * fake:     Add a totally safe, but empty, version
-  # * readonly: Read-only access to the real annex
-  # * real:     Full access to the real annex
-  annex: fake
-
   # Enable database replication? This is only needed on production, or
   # for testing the backup system.
   #
   # (Was 'enable_db_replication')
   replication: false
 
+  # Which password group should montagu use for the database? Valid
+  # options are:
+  #
+  # * production: Passwords for production
+  # * science:    Passwords for science
+  # * fake:       Create fake passwords, so that password is the username
+  #               (suitable for testing only!)
+  #
+  # (Was 'password_group')
+  password_group: fake
+
+  # Should we use the high-performance database config? This uses more
+  # memory and is not usable on teamcity or the staging VMs.
+  #
+  # (Was 'use_production_db_config')
+  large_memory: false
+
+annex:
+  # The type of annex database to set up. Valid options are:
+  #
+  # * fake:     Add a totally safe, but empty, version
+  # * readonly: Read-only access to the real annex
+  # * real:     Full access to the real annex
+  type: fake
+
+# Not just static server, but all sorts of static files that are
+# copied around.  This section will certainly change as we get the
+# document server working.
+static:
   # Copy configured static files into the server container? This can
   # be true only if source is restore
   #
@@ -93,42 +112,28 @@ data:
   # (Was 'include_guidance_reports')
   copy_guidance: false
 
-# Open the browser after deployment? Is this still a thing that is wanted?
-#
-# (Was 'open_browser')
-open_browser: false
+api:
+  # Should we add a test user with access to all modelling groups? This
+  # must be false on production!
+  #
+  # (Was 'add_test_user')
+  add_test_user: false
 
-# Which password group should montagu use for the database? Valid options are:
-#
-# * production: Passwords for production
-# * science:    Passwords for science
-# * fake:       Create fake passwords, so that password is the username
-#               (suitable for testing only!)
-#
-# (Was 'password_group')
-password_group: fake
+general:
+  # Open the browser after deployment? Is this still a thing that is wanted?
+  #
+  # (Was 'open_browser')
+  open_browser: false
 
-# Should we add a test user with access to all modelling groups? This
-# must be false on production!
-#
-# (Was 'add_test_user')
-add_test_user: false
+  # Friendly name for this instance
+  #
+  # (Was 'instance_name')
+  instance_name: teamcity
 
-# Friendly name for this instance
-#
-# (Was 'instance_name')
-instance_name: teamcity
-
-# Should we notify the slack channel "#montagu-deploy"?
-#
-# (Was 'notify_channel', though that was the channel name)
-notify_slack: false
-
-# Should we use the high-performance database config? This uses more
-# memory and is not usable on teamcity or the staging VMs.
-#
-# (Was 'use_production_db_config')
-production_db: false
+  # Should we notify the slack channel "#montagu-deploy"?
+  #
+  # (Was 'notify_channel', though that was the channel name)
+  notify_slack: false
 
 # Configuration for the vault. This section was all contained within
 # 'vault_address'
@@ -167,5 +172,5 @@ vault:
 docker:
   # Prefix for container names; we'll use {prefix}_{role} for names
   prefix: montagu
-  # Name of the docker container to use
-  network: montagu_default
+  # Name of the docker network to use
+  network: montagu_nw
