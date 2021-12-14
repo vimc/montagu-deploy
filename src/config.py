@@ -20,10 +20,10 @@ class MontaguConfig:
             dat, ["db", "persist"])
         self.db_backup = config.config_boolean(
             dat, ["db", "backup"])
-        self.db_initial = config.config_enum(
-            dat, ["db", "initial"], ["minimal", "test", "restore"])
-        self.db_update = config.config_boolean(
-            dat, ["db", "update"])
+        self.db_initial_data_source = config.config_enum(
+            dat, ["db", "initial_data_source"], ["minimal", "test", "restore"])
+        self.db_update_data = config.config_boolean(
+            dat, ["db", "update_data"])
         self.db_replication = config.config_boolean(
             dat, ["db", "replication"])
         self.db_large_memory = config.config_boolean(
@@ -32,9 +32,7 @@ class MontaguConfig:
             dat, ["db", "password_group"], ["production", "science", "fake"])
 
         # TODO: validation for update
-
-        self.annex_type = config.config_enum(
-            dat, ["annex", "type"], ["fake", "readonly", "real"])
+        # TODO: validation for backup/replication?
 
         self.api_add_test_user = config.config_boolean(
             dat, ["api", "add_test_user"])
@@ -44,12 +42,12 @@ class MontaguConfig:
         self.docker_network = config.config_string(dat, ["docker", "network"])
         self.docker_prefix = config.config_string(dat, ["docker", "prefix"])
 
-        self.general_open_browser = config.config_boolean(
-            dat, ["general", "open_browser"])
         self.general_instance_name = config.config_string(
             dat, ["general", "instance_name"])
-        self.general_notify_slack = config.config_boolean(
-            dat, ["general", "notify_slack"])
+        self.general_notify_teams = config.config_boolean(
+            dat, ["general", "notify_teams"])
+        self.general_orderly_web_root = config.config_string(
+            dat, ["general", "orderly_web_root"])
 
         self.static_copy_static = config.config_boolean(
             dat, ["static", "copy_static"])

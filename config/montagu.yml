@@ -38,7 +38,7 @@ db:
   # restore: restore from bb8 backup
   #
   # (Was 'initial_data_source')
-  initial: minimal
+  initial_data_source: minimal
 
   # Should data in the database and orderly be persisted across
   # deployments? If not, then the docker volumes will be deleted when
@@ -56,7 +56,7 @@ db:
   # * initial is "restore"
   #
   # (Was 'update_on_deploy')
-  update: false
+  update_data: false
 
   # Should data be backed up remotely using bb8? This should be
   # enabled only on production, but we might not actually support this
@@ -88,14 +88,6 @@ db:
   # (Was 'use_production_db_config')
   large_memory: false
 
-annex:
-  # The type of annex database to set up. Valid options are:
-  #
-  # * fake:     Add a totally safe, but empty, version
-  # * readonly: Read-only access to the real annex
-  # * real:     Full access to the real annex
-  type: fake
-
 # Not just static server, but all sorts of static files that are
 # copied around.  This section will certainly change as we get the
 # document server working.
@@ -120,20 +112,20 @@ api:
   add_test_user: false
 
 general:
-  # Open the browser after deployment? Is this still a thing that is wanted?
-  #
-  # (Was 'open_browser')
-  open_browser: false
-
   # Friendly name for this instance
   #
   # (Was 'instance_name')
   instance_name: teamcity
 
-  # Should we notify the slack channel "#montagu-deploy"?
+  # Should we notify the Teams channel "#montagu-deploy"?
   #
   # (Was 'notify_channel', though that was the channel name)
-  notify_slack: false
+  notify_teams: false
+
+  # The path of the orderly web api, relative to our hostname, will be
+  # accessed as
+  # https://<proxy:hostname>:<proxy:port>/<general:orderly_web_root>
+  orderly_web_root: "/reports/api/v1"
 
 # Configuration for the vault. This section was all contained within
 # 'vault_address'
