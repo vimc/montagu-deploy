@@ -9,9 +9,7 @@ class MontaguConfig:
         self.vault = config.config_vault(dat, ["vault"])
         self.network = config.config_string(dat, ["network"])
         self.protect_data = config.config_boolean(dat, ["protect_data"])
-        self.volumes = {
-            "db": config.config_string(dat, ["volumes", "db"])
-        }
+        self.volumes = {"db": config.config_string(dat, ["volumes", "db"])}
 
         self.container_prefix = config.config_string(dat, ["container_prefix"])
         self.repo = config.config_string(dat, ["repo"])
@@ -20,10 +18,7 @@ class MontaguConfig:
         self.db_user = config.config_string(dat, ["db", "user"])
         self.db_password = config.config_string(dat, ["db", "password"])
 
-        self.containers = {
-            "montagu-db": "montagu-db",
-            "montagu-api": "montagu-api"
-        }
+        self.containers = {"montagu-db": "montagu-db", "montagu-api": "montagu-api"}
 
         self.images = {
             "montagu-db": self.db_ref,
