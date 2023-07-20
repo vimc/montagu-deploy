@@ -1,0 +1,27 @@
+## Prefix for container names; we'll use {container_prefix}-(container_name)
+container_prefix: montagu
+
+## Set this flag to true to prevent use of --volumes in the cli to remove
+## volumes on stop
+protect_data: false
+
+## Docker org for images
+repo: vimc
+
+## The name of the docker network that containers will be attached to.
+## If you want to proxy Packit to the host, you will need to
+## arrange a proxy on this network
+network: montagu-network
+
+## Names of the docker volumes to use
+volumes:
+  db: db_volume
+
+api:
+  name: montagu-api
+  tag: main
+db:
+  name: montagu-db
+  tag: main
+  user: changeme
+  password: changeme
