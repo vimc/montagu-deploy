@@ -66,6 +66,11 @@ hatch build
 1. `hatch build`
 2. `pip install dist/montagu_deploy-{version}.tar.gz`
 
+## Publish to PyPi
+
+```console
+hatch publish
+```
 
 ## License
 
