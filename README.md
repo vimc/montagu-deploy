@@ -42,6 +42,31 @@ Options:
 
 Here `<path>` is the path to a directory that contains a configuration file `montagu.yml`.
 
+## Dev requirements
+
+1. [Python3](https://www.python.org/downloads/) (>= 3.7)
+2. [Hatch](https://hatch.pypa.io/latest/install/)
+
+## Test and lint
+
+1. `hatch run test`
+2. `hatch run lint:fmt`
+
+To get coverage reported locally in the console, use `hatch run cov`. 
+On CI, use `hatch run cov-ci` to generate an xml report.
+
+## Build
+
+```console
+hatch build
+```
+
+## Install from local sources
+
+1. `hatch build`
+2. `pip install dist/montagu_deploy-{version}.tar.gz`
+
+
 ## License
 
 `montagu-deploy` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.
