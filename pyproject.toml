@@ -151,7 +151,7 @@ ban-relative-imports = "all"
 "tests/**/*" = ["PLR2004", "S101", "TID252"]
 
 [tool.coverage.run]
-source_pkgs = ["montagu_deploy", "tests"]
+source = ["src"]
 branch = true
 parallel = true
 omit = [
