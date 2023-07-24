@@ -1,8 +1,8 @@
 import docker
 from constellation import docker_util
-from src.montagu_deploy.montagu_constellation import MontaguConstellation
 
 from src.montagu_deploy.config import MontaguConfig
+from src.montagu_deploy.montagu_constellation import MontaguConstellation
 
 
 def test_start_and_stop():
@@ -41,6 +41,11 @@ def test_api_configured():
     assert "allow.localhost=False" in api_config
     assert "upload.dir=/upload_dir" in api_config
     assert "email.mode=real" not in api_config
+
+    # Once the proxy is in we can test that the API is running by actually making a request to it
+    # but for now, just check the go_signal has been written
+    go = docker_util.string_from_container(api, "/etc/montagu/api/go_signal")
+    assert go is not None
 
     obj.stop(kill=True)
 

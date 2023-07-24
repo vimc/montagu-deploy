@@ -1,5 +1,4 @@
 import constellation
-
 from constellation import docker_util
 
 
@@ -27,8 +26,10 @@ class MontaguConstellation:
 
 def api_container(cfg):
     name = cfg.containers["api"]
-    mounts = [constellation.ConstellationMount("burden_estimates", "/upload_dir"),
-              constellation.ConstellationMount("emails", "/tmp/emails")]
+    mounts = [
+        constellation.ConstellationMount("burden_estimates", "/upload_dir"),
+        constellation.ConstellationMount("emails", "/tmp/emails"),  # noqa S108
+    ]
     return constellation.ConstellationContainer(name, cfg.api_ref, mounts=mounts, configure=api_configure)
 
 
@@ -59,7 +60,7 @@ def inject_api_config(container, cfg):
         "allow.localhost": False,
         # TODO  "celery.flower.host",
         "orderlyweb.api.url": cfg.orderly_web_api_url,
-        "upload.dir": "/upload_dir"
+        "upload.dir": "/upload_dir",
     }
 
     if cfg.real_emails:

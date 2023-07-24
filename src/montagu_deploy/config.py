@@ -9,9 +9,11 @@ class MontaguConfig:
         self.vault = config.config_vault(dat, ["vault"])
         self.network = config.config_string(dat, ["network"])
         self.protect_data = config.config_boolean(dat, ["protect_data"])
-        self.volumes = {"db": config.config_string(dat, ["volumes", "db"]),
-                        "emails": config.config_string(dat, ["volumes", "emails"]),
-                        "burden_estimates": config.config_string(dat, ["volumes", "burden_estimates"])}
+        self.volumes = {
+            "db": config.config_string(dat, ["volumes", "db"]),
+            "emails": config.config_string(dat, ["volumes", "emails"]),
+            "burden_estimates": config.config_string(dat, ["volumes", "burden_estimates"]),
+        }
 
         self.container_prefix = config.config_string(dat, ["container_prefix"])
         self.repo = config.config_string(dat, ["repo"])
