@@ -136,3 +136,13 @@ def test_prompt_is_quite_strict():
     assert not prompt_yes_no(lambda _: "Yes")
     assert not prompt_yes_no(lambda _: "Great idea!")
     assert not prompt_yes_no(lambda _: "")
+
+
+def test_bad_option_format():
+    with pytest.raises(Exception, match="Invalid option"):
+        cli.parse_args(["start", "config/basic", "--option=one:two"])
+
+
+def test_invalid_option_type():
+    with pytest.raises(Exception, match="Invalid value"):
+        cli.parse_args(["start", "config/basic", "--option=one={2}"])
