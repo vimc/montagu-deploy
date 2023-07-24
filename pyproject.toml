@@ -25,7 +25,8 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
-  "constellation"
+  "constellation",
+  "docopt"
 ]
 
 [project.urls]
