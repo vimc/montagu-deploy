@@ -25,13 +25,17 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
-  "constellation"
+  "constellation",
+  "docopt"
 ]
 
 [project.urls]
 Documentation = "https://github.com/unknown/montagu-deploy#readme"
 Issues = "https://github.com/unknown/montagu-deploy/issues"
 Source = "https://github.com/unknown/montagu-deploy"
+
+[project.scripts]
+montagu = "montagu_deploy.cli:main"
 
 [tool.hatch.version]
 path = "src/montagu_deploy/__about__.py"
@@ -150,7 +154,7 @@ ban-relative-imports = "all"
 "tests/**/*" = ["PLR2004", "S101", "TID252"]
 
 [tool.coverage.run]
-source_pkgs = ["montagu_deploy", "tests"]
+source = ["src"]
 branch = true
 parallel = true
 omit = [
