@@ -13,15 +13,22 @@ repo: vimc
 ## arrange a proxy on this network
 network: montagu-network
 
+# Domain where this instance of Montagu will be deployed. E.g. science.montagu.dide.ic.uk
+hostname: localhost
+
 ## Names of the docker volumes to use
 volumes:
   db: db_volume
+  burden_estimates: burden_estimate_files
+  emails: emails
 
 api:
   name: montagu-api
-  tag: main
+  tag: master
 db:
   name: montagu-db
-  tag: main
-  user: changeme
+  tag: master
+  user: vimc
   password: changeme
+
+orderly_web_api_url: http://montagu_orderly_web:8888/api/v2
