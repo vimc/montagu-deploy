@@ -19,6 +19,7 @@ def test_start_stop_status():
         assert len(containers) == 2
         cfg = MontaguConfig(path)
         assert docker_util.network_exists(cfg.network)
+        assert docker_util.volume_exists(cfg.volumes["db"])
 
         # Status
         res = cli.main(["status", "config/basic"])
@@ -31,6 +32,7 @@ def test_start_stop_status():
             containers = cl.containers.list()
             assert len(containers) == 0
             assert not docker_util.network_exists(cfg.network)
+            assert not docker_util.volume_exists(cfg.volumes["db"])
     finally:
         with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
             prompt.return_value = True
