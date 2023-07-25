@@ -8,8 +8,9 @@ class MontaguConstellation:
         db = db_container(cfg)
         admin = admin_container(cfg)
         contrib = contrib_container(cfg)
+        static = static_container(cfg)
 
-        containers = [api, db, admin, contrib]
+        containers = [api, db, admin, contrib, static]
 
         self.cfg = cfg
         self.obj = constellation.Constellation(
@@ -38,6 +39,15 @@ def contrib_container(cfg):
         constellation.ConstellationMount("guidance", "/usr/share/nginx/html/guidance"),
     ]
     return constellation.ConstellationContainer(name, cfg.contrib_ref, mounts=mounts)
+
+
+def static_container(cfg):
+    name = cfg.containers["static"]
+    mounts = [
+        constellation.ConstellationMount("static", "/www"),
+        constellation.ConstellationMount("static_logs", "/var/log/caddy"),
+    ]
+    return constellation.ConstellationContainer(name, cfg.static_ref, mounts=mounts)
 
 
 def db_container(cfg):

@@ -23,6 +23,8 @@ volumes:
   emails: emails
   templates: template_volume
   guidance: guidance_volume
+  static: static_volume
+  static_logs: static_logs
 
 api:
   name: montagu-api
@@ -37,6 +39,9 @@ contrib:
   tag: master
 admin:
   name: montagu-admin-portal
+  tag: master
+static:
+  name: montagu-static
   tag: master
 
 orderly_web_api_url: http://montagu_orderly_web:8888/api/v2

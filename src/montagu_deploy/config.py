@@ -15,6 +15,8 @@ class MontaguConfig:
             "burden_estimates": config.config_string(dat, ["volumes", "burden_estimates"]),
             "templates": config.config_string(dat, ["volumes", "templates"]),
             "guidance": config.config_string(dat, ["volumes", "guidance"]),
+            "static": config.config_string(dat, ["volumes", "static"]),
+            "static_logs": config.config_string(dat, ["volumes", "static_logs"]),
         }
 
         self.container_prefix = config.config_string(dat, ["container_prefix"])
@@ -38,13 +40,22 @@ class MontaguConfig:
         self.admin_ref = self.build_ref(dat, "admin")
         self.contrib_ref = self.build_ref(dat, "contrib")
 
-        self.containers = {"db": "db", "api": "api", "admin": "admin-portal", "contrib": "contrib-portal"}
+        self.static_ref = self.build_ref(dat, "static")
+
+        self.containers = {
+            "db": "db",
+            "api": "api",
+            "admin": "admin-portal",
+            "contrib": "contrib-portal",
+            "static": "static",
+        }
 
         self.images = {
             "db": self.db_ref,
             "api": self.api_ref,
             "admin": self.admin_ref,
             "contrib": self.contrib_ref,
+            "static": self.static_ref,
         }
 
     def build_ref(self, dat, section):
