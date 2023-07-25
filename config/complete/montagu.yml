@@ -43,9 +43,9 @@ proxy:
   port_http: 80
   port_https: 443
   ssl:
-    key: ""
-    certificate: ""
-    dhparam: ""
+    key: "k3y"
+    certificate: "cert"
+    dhparam: "param"
 contrib:
   name: montagu-contrib-portal
   tag: master

@@ -32,6 +32,7 @@ def test_config_basic():
     assert str(cfg.images["proxy"]) == "vimc/montagu-reverse-proxy:vimc-7152"
 
     assert cfg.protect_data is False
+    assert cfg.proxy_ssl_self_signed is True
 
     assert cfg.db_user == "vimc"
     assert cfg.db_password == "changeme"
@@ -49,3 +50,11 @@ def test_config_email():
     assert cfg.real_emails
     assert cfg.email_password == "changeme"
     assert cfg.email_flow_url == "fakeurl"
+
+
+def test_config_ssl():
+    cfg = MontaguConfig("config/complete")
+    assert cfg.proxy_ssl_self_signed is False
+    assert cfg.ssl_certificate == "cert"
+    assert cfg.ssl_key == "k3y"
+    assert cfg.dhparam == "param"

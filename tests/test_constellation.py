@@ -69,7 +69,7 @@ def test_api_configured():
     obj.stop(kill=True)
 
 
-def test_proxy_configured():
+def test_proxy_configured_self_signed():
     cfg = MontaguConfig("config/basic")
     obj = MontaguConstellation(cfg)
 
@@ -85,6 +85,23 @@ def test_proxy_configured():
 
     res = http_get("https://localhost")
     assert "Montagu" in res
+
+    obj.stop(kill=True)
+
+
+def test_proxy_configured_ssl():
+    cfg = MontaguConfig("config/complete")
+    obj = MontaguConstellation(cfg)
+
+    obj.start()
+
+    api = get_container(cfg, "proxy")
+    cert = docker_util.string_from_container(api, "/etc/montagu/proxy/certificate.pem")
+    key = docker_util.string_from_container(api, "/etc/montagu/proxy/ssl_key.pem")
+    param = docker_util.string_from_container(api, "/etc/montagu/proxy/dhparam.pem")
+    assert cert == "cert"
+    assert key == "k3y"
+    assert param == "param"
 
     obj.stop(kill=True)
 
