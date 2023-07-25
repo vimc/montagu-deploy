@@ -21,6 +21,8 @@ volumes:
   db: db_volume
   burden_estimates: burden_estimate_files
   emails: emails
+  templates: template_volume
+  guidance: guidance_volume
 
 api:
   name: montagu-api
@@ -33,5 +35,11 @@ db:
   tag: master
   user: vimc
   password: changeme
+contrib:
+  name: montagu-contrib-portal
+  tag: master
+admin:
+  name: montagu-admin-portal
+  tag: master
 
 orderly_web_api_url: http://montagu_orderly_web:8888/api/v2

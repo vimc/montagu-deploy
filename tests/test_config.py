@@ -11,13 +11,17 @@ def test_config_basic():
     assert cfg.volumes["burden_estimates"] == "burden_estimate_files"
     assert cfg.container_prefix == "montagu"
 
-    assert len(cfg.containers) == 2
+    assert len(cfg.containers) == 4
     assert cfg.containers["api"] == "api"
     assert cfg.containers["db"] == "db"
+    assert cfg.containers["admin"] == "admin-portal"
+    assert cfg.containers["contrib"] == "contrib-portal"
 
-    assert len(cfg.images) == 2
+    assert len(cfg.images) == 4
     assert str(cfg.images["db"]) == "vimc/montagu-db:master"
     assert str(cfg.images["api"]) == "vimc/montagu-api:master"
+    assert str(cfg.images["admin"]) == "vimc/montagu-admin-portal:master"
+    assert str(cfg.images["contrib"]) == "vimc/montagu-contrib-portal:master"
 
     assert cfg.protect_data is False
 
