@@ -17,7 +17,7 @@ def test_start_and_stop():
 
     cl = docker.client.from_env()
     containers = cl.containers.list()
-    assert len(containers) == 3
+    assert len(containers) == 6
 
     assert docker_util.network_exists(cfg.network)
     assert docker_util.volume_exists(cfg.volumes["db"])
@@ -26,6 +26,8 @@ def test_start_and_stop():
     assert docker_util.container_exists("montagu-api")
     assert docker_util.container_exists("montagu-db")
     assert docker_util.container_exists("montagu-proxy")
+    assert docker_util.container_exists("montagu-admin")
+    assert docker_util.container_exists("montagu-contrib")
 
     obj.stop(kill=True)
 
@@ -47,8 +49,10 @@ def test_api_configured():
     assert "upload.dir=/upload_dir" in api_config
     assert "email.mode=real" not in api_config
 
-    res = http_get("https://localhost/api/")
-    assert "test" in res
+    # Once the db is configured we can test that the API is running by actually making a request to it
+    # but for now, just check the go_signal has been written
+    go = docker_util.string_from_container(api, "/etc/montagu/api/go_signal")
+    assert go is not None
 
     obj.stop(kill=True)
 
@@ -73,7 +77,14 @@ def test_proxy_configured():
 
     api = get_container(cfg, "proxy")
     cert = docker_util.string_from_container(api, "/etc/montagu/proxy/certificate.pem")
+    key = docker_util.string_from_container(api, "/etc/montagu/proxy/ssl_key.pem")
+    param = docker_util.string_from_container(api, "/etc/montagu/proxy/dhparam.pem")
     assert cert is not None
+    assert key is not None
+    assert param is not None
+
+    res = http_get("https://localhost")
+    assert "Montagu" in res
 
     obj.stop(kill=True)
 
@@ -89,9 +100,9 @@ def http_get(url, retries=5, poll=0.5):
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
-    for i in range(retries):
+    for _i in range(retries):
         try:
-            r = urllib.request.urlopen(url, context=ctx)
+            r = urllib.request.urlopen(url, context=ctx)  # noqa
             return r.read().decode("UTF-8")
         except (urllib.error.URLError, ConnectionResetError) as e:
             print("sleeping...")

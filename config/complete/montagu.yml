@@ -21,6 +21,8 @@ volumes:
   db: db_volume
   burden_estimates: burden_estimate_files
   emails: emails
+  templates: template_volume
+  guidance: guidance_volume
   static: static_volume
   static_logs: static_logs
 
@@ -44,6 +46,12 @@ proxy:
     key: ""
     certificate: ""
     dhparam: ""
+contrib:
+  name: montagu-contrib-portal
+  tag: master
+admin:
+  name: montagu-admin-portal
+  tag: master
 static:
   name: montagu-static
   tag: master

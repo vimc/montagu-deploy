@@ -13,6 +13,10 @@ class MontaguConfig:
             "db": config.config_string(dat, ["volumes", "db"]),
             "emails": config.config_string(dat, ["volumes", "emails"]),
             "burden_estimates": config.config_string(dat, ["volumes", "burden_estimates"]),
+            "templates": config.config_string(dat, ["volumes", "templates"]),
+            "guidance": config.config_string(dat, ["volumes", "guidance"]),
+            "static": config.config_string(dat, ["volumes", "static"]),
+            "static_logs": config.config_string(dat, ["volumes", "static_logs"]),
         }
 
         self.container_prefix = config.config_string(dat, ["container_prefix"])
@@ -42,12 +46,28 @@ class MontaguConfig:
         self.proxy_port_http = config.config_integer(dat, ["proxy", "port_http"])
         self.proxy_port_https = config.config_integer(dat, ["proxy", "port_https"])
 
-        self.containers = {"db": "db", "api": "api", "proxy": "proxy"}
+        # Portals
+        self.admin_ref = self.build_ref(dat, "admin")
+        self.contrib_ref = self.build_ref(dat, "contrib")
+
+        self.static_ref = self.build_ref(dat, "static")
+
+        self.containers = {
+            "db": "db",
+            "api": "api",
+            "proxy": "proxy",
+            "admin": "admin",
+            "contrib": "contrib",
+            "static": "static",
+        }
 
         self.images = {
             "db": self.db_ref,
             "api": self.api_ref,
             "proxy": self.proxy_ref,
+            "admin": self.admin_ref,
+            "contrib": self.contrib_ref,
+            "static": self.static_ref,
         }
 
     def build_ref(self, dat, section):
