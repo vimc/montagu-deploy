@@ -32,11 +32,22 @@ class MontaguConfig:
         self.db_user = config.config_string(dat, ["db", "user"])
         self.db_password = config.config_string(dat, ["db", "password"])
 
-        self.containers = {"db": "db", "api": "api"}
+        # Proxy
+        self.proxy_ref = self.build_ref(dat, "proxy")
+        self.proxy_ssl_self_signed = "ssl" not in dat["proxy"]
+        if not self.proxy_ssl_self_signed:
+            self.ssl_certificate = config.config_string(dat, ["proxy", "ssl", "certificate"])
+            self.ssl_key = config.config_string(dat, ["proxy", "ssl", "key"])
+            self.dhparam = config.config_string(dat, ["proxy", "ssl", "dhparam"])
+        self.proxy_port_http = config.config_integer(dat, ["proxy", "port_http"])
+        self.proxy_port_https = config.config_integer(dat, ["proxy", "port_https"])
+
+        self.containers = {"db": "db", "api": "api", "proxy": "proxy"}
 
         self.images = {
             "db": self.db_ref,
             "api": self.api_ref,
+            "proxy": self.proxy_ref,
         }
 
     def build_ref(self, dat, section):

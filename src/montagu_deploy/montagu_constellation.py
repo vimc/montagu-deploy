@@ -1,3 +1,5 @@
+from os.path import join
+
 import constellation
 from constellation import docker_util
 
@@ -6,8 +8,9 @@ class MontaguConstellation:
     def __init__(self, cfg):
         api = api_container(cfg)
         db = db_container(cfg)
+        proxy = proxy_container(cfg)
 
-        containers = [api, db]
+        containers = [api, db, proxy]
 
         self.cfg = cfg
         self.obj = constellation.Constellation(
@@ -24,6 +27,12 @@ class MontaguConstellation:
         self.obj.status()
 
 
+def db_container(cfg):
+    name = cfg.containers["db"]
+    mounts = [constellation.ConstellationMount("db", "/pgdata")]
+    return constellation.ConstellationContainer(name, cfg.db_ref, mounts=mounts, ports=[5432])
+
+
 def api_container(cfg):
     name = cfg.containers["api"]
     mounts = [
@@ -31,12 +40,6 @@ def api_container(cfg):
         constellation.ConstellationMount("emails", "/tmp/emails"),  # noqa S108
     ]
     return constellation.ConstellationContainer(name, cfg.api_ref, mounts=mounts, configure=api_configure)
-
-
-def db_container(cfg):
-    name = cfg.containers["db"]
-    mounts = [constellation.ConstellationMount("db", "/pgdata")]
-    return constellation.ConstellationContainer(name, cfg.db_ref, mounts=mounts, ports=[5432])
 
 
 def api_configure(container, cfg):
@@ -70,3 +73,27 @@ def inject_api_config(container, cfg):
 
     txt = "".join([f"{k}={v}\n" for k, v in opts.items()])
     docker_util.string_into_container(txt, container, "/etc/montagu/api/config.properties")
+
+
+def proxy_container(cfg):
+    name = cfg.containers["proxy"]
+    proxy_ports = [cfg.proxy_port_http, cfg.proxy_port_https]
+    return constellation.ConstellationContainer(name, cfg.proxy_ref,
+                                                ports=proxy_ports,
+                                                args=[str(cfg.proxy_port_https), cfg.hostname],
+                                                configure=proxy_configure)
+
+
+def proxy_configure(container, cfg):
+    print("[proxy] Configuring reverse proxy")
+    ssl_path = "/etc/montagu/proxy"
+    if cfg.proxy_ssl_self_signed:
+        print("[proxy] Generating self-signed certificates for proxy")
+        docker_util.exec_safely(
+            container, ["self-signed-certificate", ssl_path])
+    else:
+        print("[proxy] Copying ssl certificate and key into proxy")
+        docker_util.exec_safely(container, f"mkdir -p {ssl_path}")
+        docker_util.string_into_container(cfg.ssl_certificate, container, join(ssl_path, "certificate.pem"))
+        docker_util.string_into_container(cfg.ssl_key, container, join(ssl_path, "ssl_key.pem"))
+        docker_util.string_into_container(cfg.dhparam, container, join(ssl_path, "dhparam.pem"))

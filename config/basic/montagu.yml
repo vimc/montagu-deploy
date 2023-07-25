@@ -21,6 +21,8 @@ volumes:
   db: db_volume
   burden_estimates: burden_estimate_files
   emails: emails
+  static: static_volume
+  static_logs: static_logs
 
 api:
   name: montagu-api
@@ -30,5 +32,13 @@ db:
   tag: master
   user: vimc
   password: changeme
+proxy:
+  name: montagu-reverse-proxy
+  tag: vimc-7152
+  port_http: 80
+  port_https: 443
+static:
+  name: montagu-static
+  tag: master
 
 orderly_web_api_url: http://montagu_orderly_web:8888/api/v2
