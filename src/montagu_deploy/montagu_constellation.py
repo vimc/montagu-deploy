@@ -1,7 +1,11 @@
 from os.path import join
 
 import constellation
+import docker
 from constellation import docker_util
+from psycopg2 import connect
+
+from montagu_deploy import database
 
 
 class MontaguConstellation:
@@ -56,7 +60,65 @@ def static_container(cfg):
 def db_container(cfg):
     name = cfg.containers["db"]
     mounts = [constellation.ConstellationMount("db", "/pgdata")]
-    return constellation.ConstellationContainer(name, cfg.db_ref, mounts=mounts, ports=[5432])
+    return constellation.ConstellationContainer(name, cfg.db_ref, mounts=mounts, ports=[5432], configure=db_configure)
+
+
+def db_configure(container, cfg):
+    print("[db] Waiting for the database to accept connections")
+    docker_util.exec_safely(container, ["montagu-wait.sh", "7200"])
+    print("[db] Scrambling root password")
+    set_db_root_password(container, cfg, cfg.db_root_password)
+
+    print("[db] Setting up database users")
+    with connect(
+        user=cfg.db_root_user, dbname="montagu", password=cfg.db_root_password, host="localhost", port=5432
+    ) as conn:
+        with conn.cursor() as cur:
+            for user in cfg.db_users:
+                database.create_db_user(cur, user, cfg.db_users[user])
+        conn.commit()
+
+    print("[db] Migrating database schema")
+    migrate_db_schema(cfg)
+
+    print("[db] Refreshing user permissions")
+    # The migrations may have added new tables, so we should set the permissions
+    # again, in case users need to have permissions on these new tables
+    with connect(
+        user=cfg.db_root_user, dbname="montagu", password=cfg.db_root_password, host="localhost", port=5432
+    ) as conn:
+        with conn.cursor() as cur:
+            for user in cfg.db_users:
+                database.set_permissions(cur, user)
+                # Revoke specific permissions now that all tables have been created.
+                database.revoke_write_on_protected_tables(cur, user, cfg.db_protected_tables)
+        conn.commit()
+
+
+#  setup_streaming_replication(container, cfg.db_root_password)
+
+
+def set_db_root_password(container, cfg, password):
+    query = f"ALTER USER {cfg.db_root_user} WITH PASSWORD '{password}'"
+    docker_util.exec_safely(container, f'psql -U {cfg.db_root_user} -d postgres -c "{query}"')
+
+
+def migrate_db_schema(cfg):
+    print("[db] Migrating schema")
+    network_name = cfg.network
+    image = cfg.db_migrate_ref
+    client = docker.client.from_env()
+    try:
+        result = client.containers.run(
+            str(image),
+            [f"-user={cfg.db_root_user}", f"-password={cfg.db_root_password}", "migrate"],
+            network=network_name,
+            stderr=True,
+            remove=True,
+        )
+    except docker.errors.ContainerError as e:
+        result = e.stderr
+    return result.decode("UTF-8")
 
 
 def api_container(cfg):
@@ -84,8 +146,8 @@ def inject_api_config(container, cfg):
     opts = {
         "app.url": f"https://{cfg.hostname}/api",
         "db.host": db_name,
-        "db.username": cfg.db_user,
-        "db.password": cfg.db_password,
+        "db.username": "api",
+        "db.password": cfg.db_users["api"],
         "allow.localhost": False,
         # TODO  "celery.flower.host",
         "orderlyweb.api.url": cfg.orderly_web_api_url,

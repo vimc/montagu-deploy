@@ -35,8 +35,29 @@ api:
 db:
   name: montagu-db
   tag: master
-  user: vimc
-  password: changeme
+  root_user: vimc
+  root_password: "changeme"
+  migrate:
+    name: montagu-migrate
+    tag: master
+  users:
+    api: "apipassword"
+    import: "importpassword"
+    orderly: "orderlypassword"
+    readonly: "readonlypassword"
+  protected_tables:
+    - gavi_support_level
+    - activity_type
+    - burden_outcome
+    - gender
+    - responsibility_set_status
+    - impact_outcome
+    - gavi_support_level
+    - support_type
+    - touchstone_status
+    - permission
+    - role
+    - role_permission
 proxy:
   name: montagu-reverse-proxy
   tag: master

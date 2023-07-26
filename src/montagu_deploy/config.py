@@ -1,3 +1,6 @@
+import random
+import string
+
 import constellation
 from constellation import config
 
@@ -33,8 +36,16 @@ class MontaguConfig:
 
         # DB
         self.db_ref = self.build_ref(dat, "db")
-        self.db_user = config.config_string(dat, ["db", "user"])
-        self.db_password = config.config_string(dat, ["db", "password"])
+        self.db_migrate_ref = self.build_ref(dat["db"], "migrate")
+        self.db_root_user = config.config_string(dat, ["db", "root_user"])
+        if "root_password" in dat["db"]:
+            self.db_root_password = config.config_string(dat, ["db", "root_password"])
+        else:
+            self.db_root_password = "".join(
+                random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(50)
+            )
+        self.db_users = config.config_dict(dat, ["db", "users"])
+        self.db_protected_tables = self.config_value(dat, ["db", "protected_tables"], "list", is_optional=False)
 
         # Proxy
         self.proxy_ref = self.build_ref(dat, "proxy")
@@ -68,9 +79,30 @@ class MontaguConfig:
             "admin": self.admin_ref,
             "contrib": self.contrib_ref,
             "static": self.static_ref,
+            "db_migrate": self.db_migrate_ref,
         }
 
     def build_ref(self, dat, section):
         name = config.config_string(dat, [section, "name"])
         tag = config.config_string(dat, [section, "tag"])
         return constellation.ImageReference(self.repo, name, tag)
+
+    def config_value(self, data, path, data_type, is_optional, default=None):
+        if type(path) is str:
+            path = [path]
+        for i, p in enumerate(path):
+            try:
+                data = data[p]
+                if data is None:
+                    raise KeyError()
+            except KeyError as e:
+                if is_optional:
+                    return default
+                e.args = (":".join(path[: (i + 1)]),)
+                raise e
+
+        expected = {"string": str, "integer": int, "boolean": bool, "dict": dict, "list": list}
+        if type(data) is not expected[data_type]:
+            msg = "Expected {} for {}".format(data_type, ":".join(path))
+            raise ValueError(msg)
+        return data

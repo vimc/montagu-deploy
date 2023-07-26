@@ -43,16 +43,14 @@ def test_api_configured():
 
     assert "app.url=https://localhost/api" in api_config
     assert "db.host=db" in api_config
-    assert "db.username=vimc" in api_config
-    assert "db.password=changeme" in api_config
+    assert "db.username=api" in api_config
+    assert "db.password=apipassword" in api_config
     assert "allow.localhost=False" in api_config
     assert "upload.dir=/upload_dir" in api_config
     assert "email.mode=real" not in api_config
 
-    # Once the db is configured we can test that the API is running by actually making a request to it
-    # but for now, just check the go_signal has been written
-    go = docker_util.string_from_container(api, "/etc/montagu/api/go_signal")
-    assert go is not None
+    res = http_get("https://localhost/api/v1")
+    assert '"status": "success"' in res
 
     obj.stop(kill=True)
 

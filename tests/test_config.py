@@ -23,19 +23,28 @@ def test_config_basic():
     assert cfg.containers["static"] == "static"
     assert cfg.containers["proxy"] == "proxy"
 
-    assert len(cfg.images) == 6
+    assert len(cfg.images) == 7
     assert str(cfg.images["db"]) == "vimc/montagu-db:master"
     assert str(cfg.images["api"]) == "vimc/montagu-api:master"
     assert str(cfg.images["admin"]) == "vimc/montagu-admin-portal:master"
     assert str(cfg.images["contrib"]) == "vimc/montagu-contrib-portal:master"
     assert str(cfg.images["static"]) == "vimc/montagu-static:master"
     assert str(cfg.images["proxy"]) == "vimc/montagu-reverse-proxy:vimc-7152"
+    assert str(cfg.images["db_migrate"]) == "vimc/montagu-migrate:master"
 
     assert cfg.protect_data is False
     assert cfg.proxy_ssl_self_signed is True
 
-    assert cfg.db_user == "vimc"
-    assert cfg.db_password == "changeme"
+    assert cfg.db_root_user == "vimc"
+    assert cfg.db_root_password == "changeme"
+    assert cfg.db_users == {
+        "api": "apipassword",
+        "import": "importpassword",
+        "orderly": "orderlypassword",
+        "readonly": "readonlypassword",
+    }
+    assert len(cfg.db_protected_tables) == 12
+    assert cfg.db_protected_tables[0] == "gavi_support_level"
 
 
 def test_config_email():
