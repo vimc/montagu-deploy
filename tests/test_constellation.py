@@ -17,17 +17,27 @@ def test_start_and_stop():
 
     cl = docker.client.from_env()
     containers = cl.containers.list()
-    assert len(containers) == 6
+    assert len(containers) == 9
 
     assert docker_util.network_exists(cfg.network)
     assert docker_util.volume_exists(cfg.volumes["db"])
     assert docker_util.volume_exists(cfg.volumes["burden_estimates"])
+    assert docker_util.volume_exists(cfg.volumes["emails"])
+    assert docker_util.volume_exists(cfg.volumes["static"])
+    assert docker_util.volume_exists(cfg.volumes["static_logs"])
+    assert docker_util.volume_exists(cfg.volumes["mq"])
+    assert docker_util.volume_exists(cfg.volumes["templates"])
+    assert docker_util.volume_exists(cfg.volumes["guidance"])
 
     assert docker_util.container_exists("montagu-api")
     assert docker_util.container_exists("montagu-db")
     assert docker_util.container_exists("montagu-proxy")
     assert docker_util.container_exists("montagu-admin")
     assert docker_util.container_exists("montagu-contrib")
+    assert docker_util.container_exists("montagu-static")
+    assert docker_util.container_exists("montagu-mq")
+    assert docker_util.container_exists("montagu-flower")
+    assert docker_util.container_exists("montagu-task-queue")
 
     obj.stop(kill=True)
 

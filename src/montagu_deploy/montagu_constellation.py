@@ -12,8 +12,11 @@ class MontaguConstellation:
         contrib = contrib_container(cfg)
         static = static_container(cfg)
         proxy = proxy_container(cfg)
+        mq = mq_container(cfg)
+        flower = flower_container(cfg)
+        task_queue = task_queue_container(cfg)
 
-        containers = [api, db, admin, contrib, static, proxy]
+        containers = [api, db, admin, contrib, static, proxy, mq, flower, task_queue]
 
         self.cfg = cfg
         self.obj = constellation.Constellation(
@@ -51,6 +54,36 @@ def static_container(cfg):
         constellation.ConstellationMount("static_logs", "/var/log/caddy"),
     ]
     return constellation.ConstellationContainer(name, cfg.static_ref, mounts=mounts)
+
+
+def mq_container(cfg):
+    name = cfg.containers["mq"]
+    mounts = [
+        constellation.ConstellationMount("mq", "/data"),
+    ]
+    return constellation.ConstellationContainer(name, cfg.mq_ref, mounts=mounts, ports=[cfg.mq_port])
+
+
+def flower_container(cfg):
+    name = cfg.containers["flower"]
+    mq = cfg.containers["mq"]
+    env = {
+        "CELERY_BROKEN_URL": f"redis://{mq}//",
+        "CELERY_RESULT_BACKEND": f"redis://{mq}/0",
+        "FLOWER_PORT": cfg.flower_port
+    }
+    return constellation.ConstellationContainer(name, cfg.flower_ref, ports=[cfg.flower_port], environment=env)
+
+
+def task_queue_container(cfg):
+    name = cfg.containers["task_queue"]
+    mounts = [
+        constellation.ConstellationMount("burden_estimates", "/home/worker/burden_estimate_files"),
+    ]
+    env = {
+        "YOUTRACK_TOKEN": cfg.youtrack_token
+    }
+    return constellation.ConstellationContainer(name, cfg.task_queue_ref, mounts=mounts, environment=env)
 
 
 def db_container(cfg):

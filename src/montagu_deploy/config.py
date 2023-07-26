@@ -17,6 +17,7 @@ class MontaguConfig:
             "guidance": config.config_string(dat, ["volumes", "guidance"]),
             "static": config.config_string(dat, ["volumes", "static"]),
             "static_logs": config.config_string(dat, ["volumes", "static_logs"]),
+            "mq": config.config_string(dat, ["volumes", "mq"])
         }
 
         self.container_prefix = config.config_string(dat, ["container_prefix"])
@@ -52,6 +53,14 @@ class MontaguConfig:
 
         self.static_ref = self.build_ref(dat, "static")
 
+        # Task Q
+        self.mq_ref = self.build_ref(dat, "mq")
+        self.mq_port = config.config_integer(dat, ["mq", "port"])
+        self.flower_ref = self.build_ref(dat, "flower")
+        self.flower_port = config.config_integer(dat, ["flower", "port"])
+        self.task_queue_ref = self.build_ref(dat, "task_queue")
+        self.youtrack_token = config.config_string(dat, ["task_queue", "youtrack_token"])
+
         self.containers = {
             "db": "db",
             "api": "api",
@@ -59,6 +68,9 @@ class MontaguConfig:
             "admin": "admin",
             "contrib": "contrib",
             "static": "static",
+            "mq": "mq",
+            "flower": "flower",
+            "task_queue": "task-queue"
         }
 
         self.images = {
@@ -68,9 +80,16 @@ class MontaguConfig:
             "admin": self.admin_ref,
             "contrib": self.contrib_ref,
             "static": self.static_ref,
+            "mq": self.mq_ref,
+            "flower": self.flower_ref,
+            "task_queue": self.task_queue_ref
         }
 
     def build_ref(self, dat, section):
         name = config.config_string(dat, [section, "name"])
         tag = config.config_string(dat, [section, "tag"])
-        return constellation.ImageReference(self.repo, name, tag)
+        if "repo" in dat[section]:
+            repo = config.config_string(dat, [section, "repo"])
+        else:
+            repo = self.repo
+        return constellation.ImageReference(repo, name, tag)

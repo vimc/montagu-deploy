@@ -25,6 +25,7 @@ volumes:
   guidance: guidance_volume
   static: static_volume
   static_logs: static_logs
+  mq: mq
 
 api:
   name: montagu-api
@@ -48,5 +49,19 @@ admin:
 static:
   name: montagu-static
   tag: master
+mq:
+  repo: docker.io
+  name: redis
+  tag: latest
+  port: 6379
+flower:
+  repo: mher
+  name: flower
+  tag: 0.9.5
+  port: 5555
+task_queue:
+  name: task-queue-worker
+  tag: master
+  youtrack_token: "faketoken"
 
 orderly_web_api_url: http://montagu_orderly_web:8888/api/v2
