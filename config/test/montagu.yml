@@ -30,9 +30,6 @@ volumes:
 api:
   name: montagu-api
   tag: master
-  admin:
-    name: montagu-cli
-    tag: master
 db:
   name: montagu-db
   tag: master
@@ -67,8 +64,10 @@ task_queue:
   tag: master
   youtrack_token: "faketoken"
 fake_smtp_server:
-  repo: reachfive
-  name: fake-smtp-server
-  tag: latest
+  image: reachfive/fake-smtp-server
+  restart: always
+  ports:
+    - "1025:1025"
+    - "1080:1080"
 
 orderly_web_api_url: https://localhost/reports/api/v2

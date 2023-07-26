@@ -42,8 +42,12 @@ path = "src/montagu_deploy/__about__.py"
 
 [tool.hatch.envs.default]
 dependencies = [
+  "celery",
   "coverage[toml]>=6.5",
+  "orderly_web",
   "pytest",
+  "redis",
+  "YTClient"
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"

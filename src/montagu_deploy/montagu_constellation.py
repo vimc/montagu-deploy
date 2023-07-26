@@ -1,6 +1,7 @@
 from os.path import join
 
 import constellation
+import yaml
 from constellation import docker_util
 
 
@@ -17,6 +18,10 @@ class MontaguConstellation:
         task_queue = task_queue_container(cfg)
 
         containers = [api, db, admin, contrib, static, proxy, mq, flower, task_queue]
+
+        if cfg.fake_smtp_ref:
+            fake_smtp = fake_smtp_container(cfg)
+            containers.append(fake_smtp)
 
         self.cfg = cfg
         self.obj = constellation.Constellation(
@@ -83,7 +88,25 @@ def task_queue_container(cfg):
     env = {
         "YOUTRACK_TOKEN": cfg.youtrack_token
     }
-    return constellation.ConstellationContainer(name, cfg.task_queue_ref, mounts=mounts, environment=env)
+    return constellation.ConstellationContainer(name, cfg.task_queue_ref, configure=task_queue_configure,
+                                                mounts=mounts, environment=env)
+
+
+def task_queue_configure(container, cfg):
+    print("[task-queue] Configuring task-queue container")
+    local_config_file = join(cfg.path, "task-queue.yml")
+    with open(local_config_file, "r") as ymlfile:
+        config = yaml.load(ymlfile, Loader=yaml.FullLoader)
+    reports_cfg_filename = join(cfg.path, "diagnostic-reports.yml")
+    with open(reports_cfg_filename, "r") as ymlfile:
+        diag_reports = yaml.load(ymlfile, Loader=yaml.FullLoader)
+    config["tasks"]["diagnostic_reports"]["reports"] = diag_reports
+    docker_util.string_into_container(yaml.dump(config), container, "home/worker/config/config.yml")
+
+
+def fake_smtp_container(cfg):
+    name = cfg.containers["fake_smtp"]
+    return constellation.ConstellationContainer(name, cfg.fake_smtp_ref, ports=[1025, 1080])
 
 
 def db_container(cfg):

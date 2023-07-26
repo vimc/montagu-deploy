@@ -1,0 +1,21 @@
+host: montagu-mq
+servers:
+  montagu:
+    url: https://localhost/api
+    user: montagu-task@imperial.ac.uk
+    password: password
+  orderlyweb:
+    url: https://localhost/reports
+  youtrack:
+    token: faketoken
+  smtp:
+    host: montagu-fake-smtp
+    port: 1025
+    from: montagu-notifications@imperial.ac.uk
+tasks:
+  diagnostic_reports:
+    use_additional_recipients: false
+    poll_seconds: 5
+    reports:
+  archive_folder_contents:
+    min_file_age_seconds: 3600

@@ -1,0 +1,21 @@
+host: montagu-mq
+servers:
+  montagu:
+    url: https://localhost
+    user: test.user@example.com
+    password: password
+  orderlyweb:
+    url: https://localhost/reports
+  youtrack:
+    token: "faketoken"
+  smtp:
+    host: montagu_fake_smtp_server_1
+    port: 1025
+    from: noreply@example.com
+tasks:
+  diagnostic_reports:
+    use_additional_recipients: true
+    poll_seconds: 5
+    reports:
+  archive_folder_contents:
+    min_file_age_seconds: 3600

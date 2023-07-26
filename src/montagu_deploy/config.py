@@ -6,6 +6,7 @@ class MontaguConfig:
     def __init__(self, path, extra=None, options=None):
         dat = config.read_yaml(f"{path}/montagu.yml")
         dat = config.config_build(path, dat, extra, options)
+        self.path = path
         self.vault = config.config_vault(dat, ["vault"])
         self.network = config.config_string(dat, ["network"])
         self.protect_data = config.config_boolean(dat, ["protect_data"])
@@ -27,6 +28,7 @@ class MontaguConfig:
 
         # API
         self.api_ref = self.build_ref(dat, "api")
+        self.api_admin_ref = self.build_ref(dat["api"], "admin")
         self.real_emails = "email" in dat["api"]
         if self.real_emails:
             self.email_password = config.config_string(dat, ["api", "email", "password"])
@@ -60,6 +62,10 @@ class MontaguConfig:
         self.flower_port = config.config_integer(dat, ["flower", "port"])
         self.task_queue_ref = self.build_ref(dat, "task_queue")
         self.youtrack_token = config.config_string(dat, ["task_queue", "youtrack_token"])
+        if "fake_smtp_server" in dat:
+            self.fake_smtp_ref = self.build_ref(dat, "fake_smtp_server")
+        else:
+            self.fake_smtp_ref = False
 
         self.containers = {
             "db": "db",
@@ -73,6 +79,9 @@ class MontaguConfig:
             "task_queue": "task-queue"
         }
 
+        if self.fake_smtp_ref:
+            self.containers["fake_smtp"] = "fake-smtp"
+
         self.images = {
             "db": self.db_ref,
             "api": self.api_ref,
@@ -82,8 +91,12 @@ class MontaguConfig:
             "static": self.static_ref,
             "mq": self.mq_ref,
             "flower": self.flower_ref,
-            "task_queue": self.task_queue_ref
+            "task_queue": self.task_queue_ref,
+            "api_admin": self.api_admin_ref
         }
+
+        if self.fake_smtp_ref:
+            self.images["fake_smtp"] = self.fake_smtp_ref
 
     def build_ref(self, dat, section):
         name = config.config_string(dat, [section, "name"])

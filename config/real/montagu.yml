@@ -30,9 +30,9 @@ volumes:
 api:
   name: montagu-api
   tag: master
-  admin:
-    name: montagu-cli
-    tag: master
+  email:
+    password: "changeme"
+    flow_url: "fakeurl"
 db:
   name: montagu-db
   tag: master
@@ -40,9 +40,21 @@ db:
   password: changeme
 proxy:
   name: montagu-reverse-proxy
-  tag: vimc-7152
+  tag: master
   port_http: 80
   port_https: 443
+  ## This section describes how to get the certificate in.  We
+  ## support two sources:
+  ##
+  ## 1. self signed certificates - just leave this section blank
+  ##
+  ## 2. certificates from strings - include the strings directly in
+  ##    the keys here, or more likely use a VAULT:<path>:<key>
+  ##    string to extract them from the vault.
+  ssl:
+    key: "k3y"
+    certificate: "cert"
+    dhparam: "param"
 contrib:
   name: montagu-contrib-portal
   tag: master
@@ -66,9 +78,5 @@ task_queue:
   name: task-queue-worker
   tag: master
   youtrack_token: "faketoken"
-fake_smtp_server:
-  repo: reachfive
-  name: fake-smtp-server
-  tag: latest
 
-orderly_web_api_url: https://localhost/reports/api/v2
+orderly_web_api_url: http://montagu_orderly_web:8888/api/v2

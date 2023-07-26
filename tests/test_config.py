@@ -16,7 +16,7 @@ def test_config_basic():
     assert cfg.volumes["mq"] == "mq"
     assert cfg.container_prefix == "montagu"
 
-    assert len(cfg.containers) == 9
+    assert len(cfg.containers) == 10
     assert cfg.containers["api"] == "api"
     assert cfg.containers["db"] == "db"
     assert cfg.containers["admin"] == "admin"
@@ -27,7 +27,7 @@ def test_config_basic():
     assert cfg.containers["flower"] == "flower"
     assert cfg.containers["task_queue"] == "task-queue"
 
-    assert len(cfg.images) == 9
+    assert len(cfg.images) == 10
     assert str(cfg.images["db"]) == "vimc/montagu-db:master"
     assert str(cfg.images["api"]) == "vimc/montagu-api:master"
     assert str(cfg.images["admin"]) == "vimc/montagu-admin-portal:master"

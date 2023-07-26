@@ -33,6 +33,9 @@ api:
   email:
     password: "changeme"
     flow_url: "fakeurl"
+  admin:
+    name: montagu-cli
+    tag: master
 db:
   name: montagu-db
   tag: master
@@ -79,4 +82,4 @@ task_queue:
   tag: master
   youtrack_token: "faketoken"
 
-orderly_web_api_url: http://montagu_orderly_web:8888/api/v2
+orderly_web_api_url: ttps://localhost/reports/api/v2
