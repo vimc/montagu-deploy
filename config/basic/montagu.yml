@@ -34,6 +34,11 @@ db:
   tag: master
   user: vimc
   password: changeme
+proxy:
+  name: montagu-reverse-proxy
+  tag: vimc-7152
+  port_http: 80
+  port_https: 443
 contrib:
   name: montagu-contrib-portal
   tag: master

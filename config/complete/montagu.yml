@@ -37,6 +37,23 @@ db:
   tag: master
   user: vimc
   password: changeme
+proxy:
+  name: montagu-reverse-proxy
+  tag: master
+  port_http: 80
+  port_https: 443
+  ## This section describes how to get the certificate in.  We
+  ## support two sources:
+  ##
+  ## 1. self signed certificates - just leave this section blank
+  ##
+  ## 2. certificates from strings - include the strings directly in
+  ##    the keys here, or more likely use a VAULT:<path>:<key>
+  ##    string to extract them from the vault.
+  ssl:
+    key: "k3y"
+    certificate: "cert"
+    dhparam: "param"
 contrib:
   name: montagu-contrib-portal
   tag: master
