@@ -46,6 +46,7 @@ class MontaguConfig:
             )
         self.db_users = config.config_dict(dat, ["db", "users"])
         self.db_protected_tables = config_value(dat, ["db", "protected_tables"], "list", is_optional=False)
+        self.enable_streaming_replication = "barman" in self.db_users and "streaming_barman" in self.db_users
 
         # Proxy
         self.proxy_ref = self.build_ref(dat, "proxy")

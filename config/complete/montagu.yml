@@ -41,10 +41,24 @@ db:
     name: montagu-migrate
     tag: master
   users:
-    api: "apipassword"
-    import: "importpassword"
-    orderly: "orderlypassword"
-    readonly: "readonlypassword"
+    api:
+      password: "apipassword"
+      permissions: all
+    import:
+      password: "importpassword"
+      permissions: all
+    orderly:
+      password: "orderlypassword"
+      permissions: all
+    readonly:
+      password: "readonlypassword"
+      permissions: readonly
+    barman:
+      password: "barmanpassword"
+      option: superuser
+    streaming_barman:
+      password: "streamingpassword"
+      option: replication
   protected_tables:
     - gavi_support_level
     - activity_type

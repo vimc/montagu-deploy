@@ -87,6 +87,28 @@ def test_proxy_configured_self_signed():
     obj.stop(kill=True)
 
 
+def test_db_configured():
+    cfg = MontaguConfig("config/complete")
+    obj = MontaguConstellation(cfg)
+
+    obj.start()
+
+    db = get_container(cfg, "db")
+    res = docker_util.exec_safely(db, f'psql -U {cfg.db_root_user} -d postgres -c "\\du"')
+    res = res.output.decode("UTF-8")
+
+    for u in cfg.db_users:
+        assert u in res
+
+    query = "SELECT * FROM pg_replication_slots WHERE slot_name = 'barman'"
+    res = docker_util.exec_safely(db, f'psql -U {cfg.db_root_user} -d postgres -c "{query}"')
+    res = res.output.decode("UTF-8")
+
+    assert "barman" in res
+
+    obj.stop(kill=True)
+
+
 def test_proxy_configured_ssl():
     cfg = MontaguConfig("config/complete")
     obj = MontaguConstellation(cfg)

@@ -36,12 +36,12 @@ def test_config_basic():
     assert cfg.proxy_ssl_self_signed is True
 
     assert cfg.db_root_user == "vimc"
-    assert cfg.db_root_password == "changeme"
+    assert len(cfg.db_root_password) == 50
     assert cfg.db_users == {
-        "api": "apipassword",
-        "import": "importpassword",
-        "orderly": "orderlypassword",
-        "readonly": "readonlypassword",
+        "api": {"password": "apipassword", "permissions": "all"},
+        "import": {"password": "importpassword", "permissions": "all"},
+        "orderly": {"password": "orderlypassword", "permissions": "all"},
+        "readonly": {"password": "readonlypassword", "permissions": "readonly"},
     }
     assert len(cfg.db_protected_tables) == 12
     assert cfg.db_protected_tables[0] == "gavi_support_level"
@@ -69,9 +69,18 @@ def test_config_ssl():
     assert cfg.dhparam == "param"
 
 
-def test_config_generates_root_password():
+def test_config_generates_root_db_password():
     cfg = MontaguConfig("config/complete")
     assert cfg.db_root_password == "changeme"
     cfg = MontaguConfig("config/basic")
     assert cfg.db_root_password != "changeme"
     assert len(cfg.db_root_password) == 50
+
+
+def test_config_streaming_replication():
+    cfg = MontaguConfig("config/basic")
+    assert not cfg.enable_streaming_replication
+    cfg = MontaguConfig("config/complete")
+    assert cfg.enable_streaming_replication
+    assert cfg.db_users["barman"] == {"password": "barmanpassword", "option": "superuser"}
+    assert cfg.db_users["streaming_barman"] == {"password": "streamingpassword", "option": "replication"}

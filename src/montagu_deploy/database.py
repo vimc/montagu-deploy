@@ -1,33 +1,43 @@
-def create_db_user(curr, user, password):
-    create_user(curr, user, password)
-    set_password(curr, user, password)
-    set_permissions(curr, user)
+def setup_db_user(curr, user, settings):
+    create_user(curr, user, settings)
+    set_password(curr, user, settings)
+    set_permissions(curr, user, settings)
 
 
-def create_user(db, user, password):
+def create_user(db, user, settings):
+    if "option" in settings:
+        option = settings["option"]
+    else:
+        option = ""
     sql = """DO
     $body$
     BEGIN
        IF NOT EXISTS (SELECT FROM pg_catalog.pg_user WHERE usename = '{name}') THEN
-          CREATE ROLE {name} LOGIN PASSWORD '{password}';
+          CREATE ROLE {name} {option} LOGIN PASSWORD '{password}';
        END IF;
     END
     $body$""".format(
-        name=user, password=password
+        name=user, password=settings["password"], option=option
     )
     db.execute(sql)
 
 
-def set_password(db, user, password):
-    db.execute(f"ALTER USER {user} WITH PASSWORD '{password}'")
+def set_password(db, user, settings):
+    db.execute(f"ALTER USER {user} WITH PASSWORD '{settings['password']}'")
 
 
-def set_permissions(curr, user):
+def set_permissions(curr, user, settings):
+    if "permissions" not in settings:
+        return
     revoke_all(curr, user)
-    if user == "readonly":
+    permissions = settings["permissions"]
+    if permissions == "all":
+        grant_all(curr, user)
+    elif permissions == "readonly":
         grant_readonly(curr, user)
     else:
-        grant_all(curr, user)
+        msg = f"Unsupported database permissions {permissions} for user {user}"
+        raise Exception(msg)
 
 
 def revoke_all(db, user):
