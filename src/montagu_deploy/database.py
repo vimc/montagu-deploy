@@ -1,3 +1,6 @@
+# Methods for working with a database cursor object
+
+
 def setup_db_user(curr, user, settings):
     create_user(curr, user, settings)
     set_password(curr, user, settings)
