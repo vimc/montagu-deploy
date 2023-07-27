@@ -25,8 +25,9 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
-  "constellation",
-  "docopt"
+  "constellation>=1.0.1",
+  "docopt",
+  "psycopg2"
 ]
 
 [project.urls]
@@ -43,7 +44,7 @@ path = "src/montagu_deploy/__about__.py"
 [tool.hatch.envs.default]
 dependencies = [
   "coverage[toml]>=6.5",
-  "pytest",
+  "pytest"
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"

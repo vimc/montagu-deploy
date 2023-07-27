@@ -43,16 +43,14 @@ def test_api_configured():
 
     assert "app.url=https://localhost/api" in api_config
     assert "db.host=db" in api_config
-    assert "db.username=vimc" in api_config
-    assert "db.password=changeme" in api_config
+    assert "db.username=api" in api_config
+    assert "db.password=apipassword" in api_config
     assert "allow.localhost=False" in api_config
     assert "upload.dir=/upload_dir" in api_config
     assert "email.mode=real" not in api_config
 
-    # Once the db is configured we can test that the API is running by actually making a request to it
-    # but for now, just check the go_signal has been written
-    go = docker_util.string_from_container(api, "/etc/montagu/api/go_signal")
-    assert go is not None
+    res = http_get("https://localhost/api/v1")
+    assert '"status": "success"' in res
 
     obj.stop(kill=True)
 
@@ -85,6 +83,28 @@ def test_proxy_configured_self_signed():
 
     res = http_get("https://localhost")
     assert "Montagu" in res
+
+    obj.stop(kill=True)
+
+
+def test_db_configured():
+    cfg = MontaguConfig("config/complete")
+    obj = MontaguConstellation(cfg)
+
+    obj.start()
+
+    db = get_container(cfg, "db")
+    res = docker_util.exec_safely(db, f'psql -U {cfg.db_root_user} -d postgres -c "\\du"')
+    res = res.output.decode("UTF-8")
+
+    for u in cfg.db_users:
+        assert u in res
+
+    query = "SELECT * FROM pg_replication_slots WHERE slot_name = 'barman'"
+    res = docker_util.exec_safely(db, f'psql -U {cfg.db_root_user} -d postgres -c "{query}"')
+    res = res.output.decode("UTF-8")
+
+    assert "barman" in res
 
     obj.stop(kill=True)
 
