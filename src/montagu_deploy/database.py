@@ -38,9 +38,6 @@ def set_permissions(curr, user, settings):
         grant_all(curr, user)
     elif permissions == "readonly":
         grant_readonly(curr, user)
-    else:
-        msg = f"Unsupported database permissions {permissions} for user {user}"
-        raise Exception(msg)
 
 
 def revoke_all(db, user):

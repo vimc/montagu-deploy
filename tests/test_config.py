@@ -84,3 +84,9 @@ def test_config_streaming_replication():
     assert cfg.enable_streaming_replication
     assert cfg.db_users["barman"] == {"password": "barmanpassword", "option": "superuser"}
     assert cfg.db_users["streaming_barman"] == {"password": "streamingpassword", "option": "replication"}
+
+
+def test_config_validates_db_user_permissions():
+    options = {"db": {"users": {"api": {"permissions": "bad", "password": "pw"}}}}
+    with pytest.raises(Exception, match="Invalid database permissions for 'api'."):
+        MontaguConfig("config/basic", options=options)

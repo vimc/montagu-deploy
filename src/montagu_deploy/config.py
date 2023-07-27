@@ -45,6 +45,15 @@ class MontaguConfig:
                 random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(50)
             )
         self.db_users = config.config_dict(dat, ["db", "users"])
+        invalid = {
+            k: v for k, v in self.db_users.items() if "permissions" in v and v["permissions"] not in ["all", "readonly"]
+        }
+        if any(invalid):
+            invalid_str = ",".join(iter(invalid.keys()))
+            msg = f"Invalid database permissions for '{invalid_str}'. Supported values are 'all' and 'readonly'"
+            raise Exception(
+                msg
+            )
         self.db_protected_tables = config.config_list(dat, ["db", "protected_tables"])
         self.enable_streaming_replication = "barman" in self.db_users and "streaming_barman" in self.db_users
 
