@@ -67,3 +67,11 @@ def test_config_ssl():
     assert cfg.ssl_certificate == "cert"
     assert cfg.ssl_key == "k3y"
     assert cfg.dhparam == "param"
+
+
+def test_config_generates_root_password():
+    cfg = MontaguConfig("config/complete")
+    assert cfg.db_root_password == "changeme"
+    cfg = MontaguConfig("config/basic")
+    assert cfg.db_root_password != "changeme"
+    assert len(cfg.db_root_password) == 50

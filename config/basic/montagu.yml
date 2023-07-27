@@ -33,7 +33,6 @@ db:
   name: montagu-db
   tag: master
   root_user: vimc
-  root_password: "changeme"
   migrate:
     name: montagu-migrate
     tag: master
