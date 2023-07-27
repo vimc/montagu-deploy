@@ -16,6 +16,10 @@ network: montagu-network
 # Domain where this instance of Montagu will be deployed. E.g. science.montagu.dide.ic.uk
 hostname: localhost
 
+# In dev mode, the API port is exposed to the host. This is used only for testing and must
+# be turned off in production!
+dev_mode: True
+
 ## Names of the docker volumes to use
 volumes:
   db: db_volume
@@ -39,8 +43,43 @@ api:
 db:
   name: montagu-db
   tag: master
-  user: vimc
-  password: changeme
+  root_user: vimc
+  root_password: "changeme"
+  migrate:
+    name: montagu-migrate
+    tag: master
+  users:
+    api:
+      password: "apipassword"
+      permissions: all
+    import:
+      password: "importpassword"
+      permissions: all
+    orderly:
+      password: "orderlypassword"
+      permissions: all
+    readonly:
+      password: "readonlypassword"
+      permissions: readonly
+    barman:
+      password: "barmanpassword"
+      option: superuser
+    streaming_barman:
+      password: "streamingpassword"
+      option: replication
+  protected_tables:
+    - gavi_support_level
+    - activity_type
+    - burden_outcome
+    - gender
+    - responsibility_set_status
+    - impact_outcome
+    - gavi_support_level
+    - support_type
+    - touchstone_status
+    - permission
+    - role
+    - role_permission
 proxy:
   name: montagu-reverse-proxy
   tag: master

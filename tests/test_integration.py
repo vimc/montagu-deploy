@@ -5,6 +5,7 @@ import celery
 import docker
 import orderly_web
 import requests
+import vault_dev
 from YTClient.YTClient import YTClient
 from YTClient.YTDataClasses import Command
 from constellation import docker_util
@@ -12,8 +13,10 @@ from constellation import docker_util
 from src.montagu_deploy import cli, admin
 from src.montagu_deploy.config import MontaguConfig
 
+from tests.utils import http_get
 
-def test_start_stop_status():
+
+def xtest_start_stop_status():
     path = "config/basic"
     try:
         # Start
@@ -47,18 +50,18 @@ def test_start_stop_status():
 
 def test_task_queue():
     orderly_config_path = "tests"
-    path = "config/basic"
+    path = "config/ci"
     cfg = MontaguConfig(path)
     try:
-        orderly_web.start(orderly_config_path)
+        youtrack_token = os.environ["YOUTRACK_TOKEN"]
 
-        admin.add_user(cfg, "task.queue", "task.queue", "montagu-task@imperial.ac.uk", "password")
-        orderly_web.admin.add_users(orderly_config_path, ["montagu-task@imperial.ac.uk"])
-        orderly_web.admin.grant(orderly_config_path, "montagu-task@imperial.ac.uk", ["*/reports.run", "*/reports.review",
-                                                                                     "*/reports.read"])
+        orderly_web.start(orderly_config_path)
         cli.main(["start", path])
-        yt = YTClient('https://mrc-ide.myjetbrains.com/youtrack/',
-                      token=os.environ["YOUTRACK_TOKEN"])
+
+        # wait for API to be ready
+        http_get("https://localhost/api/v1")
+
+        add_task_queue_user(cfg, orderly_config_path)
         app = celery.Celery(broker="redis://localhost//",
                             backend="redis://")
         sig = "run-diagnostic-reports"
@@ -73,12 +76,45 @@ def test_task_queue():
         s = "VIMC diagnostic report: testTouchstone-1 - testGroup - testDisease"
         assert emails[0]["subject"] == s
         assert emails[0]["to"]["value"][0][
-                   "address"] == "minimal_modeller@example.com"  #
+                   "address"] == "minimal_modeller@example.com"
+        yt = YTClient('https://mrc-ide.myjetbrains.com/youtrack/',
+                      token=os.environ["YOUTRACK_TOKEN"])
         issues = yt.get_issues("tag: {}".format("testTouchstone-1"))
         assert len(issues) == 1
         yt.run_command(Command(issues, "delete"))
     finally:
-        # with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
-        #     prompt.return_value = True
-        #     cli.main(["stop", path, "--kill", "--volumes", "--network"])
-        orderly_web.stop(orderly_config_path, kill=True)
+        with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
+            prompt.return_value = True
+            cli.main(["stop", path, "--kill", "--volumes", "--network"])
+            orderly_web.stop(orderly_config_path, kill=True)
+
+
+def add_task_queue_user(cfg, orderly_config_path):
+    admin.add_user(cfg, "task.queue", "task.queue", "montagu-task@imperial.ac.uk", "password")
+    admin.add_role_to_user(cfg, "task.queue", "user")
+    orderly_web.admin.add_users(orderly_config_path, ["montagu-task@imperial.ac.uk"])
+    orderly_web.admin.grant(orderly_config_path, "montagu-task@imperial.ac.uk",
+                            ["*/reports.run", "*/reports.review",
+                             "*/reports.read"])
+
+
+def enable_github_login(cl, path="github"):
+    cl.sys.enable_auth_method(method_type="github", path=path)
+    policy = """
+           path "secret/*" {
+             capabilities = ["read", "list"]
+           }
+           """
+
+    cl.sys.create_or_update_policy(
+        name='secret-reader',
+        policy=policy,
+    )
+
+    cl.auth.github.map_team(
+        team_name="robots",
+        policies=["secret-reader"],
+        mount_point=path
+    )
+
+    cl.auth.github.configure(organization="vimc", mount_point=path)

@@ -8,6 +8,8 @@ from constellation import docker_util
 from src.montagu_deploy.config import MontaguConfig
 from src.montagu_deploy.montagu_constellation import MontaguConstellation
 
+from tests.utils import http_get
+
 
 def test_start_and_stop():
     cfg = MontaguConfig("config/basic")
@@ -39,7 +41,7 @@ def test_start_and_stop():
     assert docker_util.container_exists("montagu-flower")
     assert docker_util.container_exists("montagu-task-queue")
 
-    obj.stop(kill=True)
+    obj.stop(kill=True, volumes=True)
 
 
 def test_api_configured():
@@ -53,18 +55,16 @@ def test_api_configured():
 
     assert "app.url=https://localhost/api" in api_config
     assert "db.host=db" in api_config
-    assert "db.username=vimc" in api_config
-    assert "db.password=changeme" in api_config
+    assert "db.username=api" in api_config
+    assert "db.password=apipassword" in api_config
     assert "allow.localhost=False" in api_config
     assert "upload.dir=/upload_dir" in api_config
     assert "email.mode=real" not in api_config
 
-    # Once the db is configured we can test that the API is running by actually making a request to it
-    # but for now, just check the go_signal has been written
-    go = docker_util.string_from_container(api, "/etc/montagu/api/go_signal")
-    assert go is not None
+    res = http_get("https://localhost/api/v1")
+    assert '"status": "success"' in res
 
-    obj.stop(kill=True)
+    obj.stop(kill=True, volumes=True)
 
     cfg = MontaguConfig("config/complete")
     obj = MontaguConstellation(cfg)
@@ -76,7 +76,7 @@ def test_api_configured():
     assert "email.password=changeme" in api_config
     assert "flow.url=fakeurl" in api_config
 
-    obj.stop(kill=True)
+    obj.stop(kill=True, volumes=True)
 
 
 def test_proxy_configured_self_signed():
@@ -96,7 +96,29 @@ def test_proxy_configured_self_signed():
     res = http_get("https://localhost")
     assert "Montagu" in res
 
-    obj.stop(kill=True)
+    obj.stop(kill=True, volumes=True)
+
+
+def test_db_configured():
+    cfg = MontaguConfig("config/complete")
+    obj = MontaguConstellation(cfg)
+
+    obj.start()
+
+    db = get_container(cfg, "db")
+    res = docker_util.exec_safely(db, f'psql -U {cfg.db_root_user} -d postgres -c "\\du"')
+    res = res.output.decode("UTF-8")
+
+    for u in cfg.db_users:
+        assert u in res
+
+    query = "SELECT * FROM pg_replication_slots WHERE slot_name = 'barman'"
+    res = docker_util.exec_safely(db, f'psql -U {cfg.db_root_user} -d postgres -c "{query}"')
+    res = res.output.decode("UTF-8")
+
+    assert "barman" in res
+
+    obj.stop(kill=True, volumes=True)
 
 
 def test_proxy_configured_ssl():
@@ -113,7 +135,7 @@ def test_proxy_configured_ssl():
     assert key == "k3y"
     assert param == "param"
 
-    obj.stop(kill=True)
+    obj.stop(kill=True, volumes=True)
 
 
 def get_container(cfg, name):
@@ -121,18 +143,3 @@ def get_container(cfg, name):
     return cl.containers.get(f"{cfg.container_prefix}-{cfg.containers[name]}")
 
 
-# Because we wait for a go signal to come up, we might not be able to
-# make the request right away:
-def http_get(url, retries=5, poll=0.5):
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-    for _i in range(retries):
-        try:
-            r = urllib.request.urlopen(url, context=ctx)  # noqa
-            return r.read().decode("UTF-8")
-        except (urllib.error.URLError, ConnectionResetError) as e:
-            print("sleeping...")
-            time.sleep(poll)
-            error = e
-    raise error

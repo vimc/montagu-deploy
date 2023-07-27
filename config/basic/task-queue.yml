@@ -1,11 +1,11 @@
 host: montagu-mq
 servers:
   montagu:
-    url: https://localhost/api
+    url: http://api:8080/
     user: montagu-task@imperial.ac.uk
     password: password
   orderlyweb:
-    url: https://localhost/reports
+    url: http://localhost:8888
   youtrack:
     token: faketoken
   smtp:

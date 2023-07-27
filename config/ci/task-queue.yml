@@ -1,20 +1,20 @@
 host: montagu-mq
 servers:
   montagu:
-    url: https://localhost
-    user: test.user@example.com
+    url: http://api:8080/
+    user: montagu-task@imperial.ac.uk
     password: password
   orderlyweb:
-    url: https://localhost/reports
+    url: http://orderly-web-web:8888
   youtrack:
-    token: "faketoken"
+    token: test
   smtp:
-    host: montagu_fake_smtp_server_1
+    host: montagu-fake-smtp
     port: 1025
-    from: noreply@example.com
+    from: montagu-notifications@imperial.ac.uk
 tasks:
   diagnostic_reports:
-    use_additional_recipients: true
+    use_additional_recipients: false
     poll_seconds: 5
     reports:
   archive_folder_contents:

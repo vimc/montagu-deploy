@@ -25,8 +25,9 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
-  "constellation",
-  "docopt"
+  "constellation>=1.0.1",
+  "docopt",
+  "psycopg2"
 ]
 
 [project.urls]
@@ -47,6 +48,7 @@ dependencies = [
   "orderly_web",
   "pytest",
   "redis",
+  "vault_dev",
   "YTClient"
 ]
 [tool.hatch.envs.default.scripts]

@@ -35,6 +35,8 @@ jobs:
         run: |
           hatch run lint:style
       - name: Test
+        env:
+          VAULT_TEST_GITHUB_PAT: ${{ secrets.VAULT_TEST_GITHUB_PAT }}
         run: |
           hatch run cov-ci
       - name: Upload to Codecov

@@ -37,7 +37,8 @@ orderly:
     tag: master
     worker_name: orderly.server
   initial:
-    source: demo
+    source: clone
+    url: https://github.com/vimc/montagu-task-queue-orderly
 
 ## Api and Website configuration
 web:
@@ -79,4 +80,4 @@ web:
     montagu: true
     ## If using Montagu auth you also need the following
     montagu_url: https://localhost
-    montagu_api_url: https://localhost/api
+    montagu_api_url: http://api:8080/v1/
