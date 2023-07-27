@@ -113,17 +113,13 @@ def db_migrate_schema(cfg):
     network_name = cfg.network
     image = cfg.db_migrate_ref
     client = docker.client.from_env()
-    try:
-        result = client.containers.run(
-            str(image),
-            [f"-user={cfg.db_root_user}", f"-password={cfg.db_root_password}", "migrate"],
-            network=network_name,
-            stderr=True,
-            remove=True,
-        )
-    except docker.errors.ContainerError as e:
-        result = e.stderr
-    return result.decode("UTF-8")
+    client.containers.run(
+        str(image),
+        [f"-user={cfg.db_root_user}", f"-password={cfg.db_root_password}", "migrate"],
+        network=network_name,
+        stderr=True,
+        remove=True,
+    )
 
 
 def db_enable_streaming_replication(container, cfg):
