@@ -68,19 +68,17 @@ def db_configure(container, cfg):
     docker_util.exec_safely(container, ["montagu-wait.sh", "7200"])
     print("[db] Scrambling root password")
     db_set_root_password(container, cfg, cfg.db_root_password)
-
     print("[db] Setting up database users")
     db_setup_users(cfg)
-
     print("[db] Migrating database schema")
     db_migrate_schema(cfg)
-
     print("[db] Refreshing user permissions")
     # The migrations may have added new tables, so we should set the permissions
     # again, in case users need to have permissions on these new tables
     db_set_user_permissions(cfg)
 
     if cfg.enable_streaming_replication:
+        print("[db] Enabling streaming replication")
         db_enable_streaming_replication(container, cfg)
 
 
@@ -112,7 +110,6 @@ def db_connection(cfg):
 
 
 def db_migrate_schema(cfg):
-    print("[db] Migrating schema")
     network_name = cfg.network
     image = cfg.db_migrate_ref
     client = docker.client.from_env()
@@ -130,7 +127,6 @@ def db_migrate_schema(cfg):
 
 
 def db_enable_streaming_replication(container, cfg):
-    print("[db] Enabling streaming replication")
     docker_util.exec_safely(
         container,
         ["enable-replication.sh", cfg.db_users["barman"]["password"], cfg.db_users["streaming_barman"]["password"]],
