@@ -16,7 +16,7 @@ from src.montagu_deploy.config import MontaguConfig
 from tests.utils import http_get
 
 
-def xtest_start_stop_status():
+def test_start_stop_status():
     path = "config/basic"
     try:
         # Start

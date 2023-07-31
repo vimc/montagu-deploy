@@ -49,6 +49,10 @@ Here `<path>` is the path to a directory that contains a configuration file `mon
 
 ## Test and lint
 
+For all integration tests to pass, you will need 2 environment variables:
+1. `YOUTRACK_TOKEN` - a token for accessing the YT API
+2. `VAULT_TOKEN` - a github PAT for a user in the vimc robots team.
+
 1. `hatch run test`
 2. `hatch run lint:fmt`
 
