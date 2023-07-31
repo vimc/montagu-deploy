@@ -1,8 +1,8 @@
 from os.path import join
 
 import constellation
-import yaml
 import docker
+import yaml
 from constellation import docker_util
 from psycopg2 import connect
 
@@ -79,7 +79,7 @@ def flower_container(cfg):
     env = {
         "CELERY_BROKEN_URL": f"redis://{mq}//",
         "CELERY_RESULT_BACKEND": f"redis://{mq}/0",
-        "FLOWER_PORT": cfg.flower_port
+        "FLOWER_PORT": cfg.flower_port,
     }
     return constellation.ConstellationContainer(name, cfg.flower_ref, ports=[cfg.flower_port], environment=env)
 
@@ -89,26 +89,22 @@ def task_queue_container(cfg):
     mounts = [
         constellation.ConstellationMount("burden_estimates", "/home/worker/burden_estimate_files"),
     ]
-    return constellation.ConstellationContainer(name, cfg.task_queue_ref, configure=task_queue_configure,
-                                                mounts=mounts)
+    return constellation.ConstellationContainer(name, cfg.task_queue_ref, configure=task_queue_configure, mounts=mounts)
 
 
 def task_queue_configure(container, cfg):
     print("[task-queue] Configuring task-queue container")
-    task_queue_config = {
-        "host": cfg.containers["mq"],
-        "servers": cfg.task_queue_servers,
-        "tasks": cfg.task_queue_tasks
-    }
+    task_queue_config = {"host": cfg.containers["mq"], "servers": cfg.task_queue_servers, "tasks": cfg.task_queue_tasks}
     task_queue_config["servers"]["montagu"]["url"] = f"http://{cfg.containers['api']}:8080"
     if cfg.fake_smtp_ref:
         task_queue_config["servers"]["smtp"]["host"] = cfg.containers["fake_smtp"]
         task_queue_config["servers"]["smtp"]["port"] = 1025
     reports_cfg_filename = join(cfg.path, "diagnostic-reports.yml")
-    with open(reports_cfg_filename, "r") as ymlfile:
-        diag_reports = yaml.load(ymlfile, Loader=yaml.FullLoader)
+    with open(reports_cfg_filename) as ymlfile:
+        diag_reports = yaml.safe_load(ymlfile)
     task_queue_config["tasks"]["diagnostic_reports"]["reports"] = diag_reports
-    docker_util.string_into_container(yaml.dump(task_queue_config), container, "home/worker/config/config.yml")
+    docker_util.string_into_container(yaml.dump(task_queue_config), container, "/home/worker/config/config.yml")
+    exec_safely(container, ["chown", "worker:worker", "/home/worker/config/config.yml"], privileged=True)
 
 
 def fake_smtp_container(cfg):
@@ -194,8 +190,7 @@ def api_container(cfg):
         constellation.ConstellationMount("burden_estimates", "/upload_dir"),
         constellation.ConstellationMount("emails", "/tmp/emails"),  # noqa S108
     ]
-    return constellation.ConstellationContainer(name, cfg.api_ref, mounts=mounts,
-                                                configure=api_configure)
+    return constellation.ConstellationContainer(name, cfg.api_ref, mounts=mounts, configure=api_configure)
 
 
 def api_configure(container, cfg):
@@ -217,7 +212,7 @@ def inject_api_config(container, cfg):
         "db.username": "api",
         "db.password": cfg.db_users["api"]["password"],
         "allow.localhost": False,
-        # TODO  "celery.flower.host",
+        "celery.flower.host": cfg.containers["flower"],
         "orderlyweb.api.url": cfg.orderly_web_api_url,
         "upload.dir": "/upload_dir",
     }
@@ -255,3 +250,12 @@ def proxy_configure(container, cfg):
         docker_util.string_into_container(cfg.ssl_certificate, container, join(ssl_path, "certificate.pem"))
         docker_util.string_into_container(cfg.ssl_key, container, join(ssl_path, "ssl_key.pem"))
         docker_util.string_into_container(cfg.dhparam, container, join(ssl_path, "dhparam.pem"))
+
+
+def exec_safely(container, args, **kwargs):
+    ans = container.exec_run(args, **kwargs)
+    if ans[0] != 0:
+        print(ans[1].decode("UTF-8"))
+        msg = "Error running command (see above for log)"
+        raise Exception(msg)
+    return ans

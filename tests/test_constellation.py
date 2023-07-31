@@ -1,13 +1,8 @@
-import ssl
-import time
-import urllib
-
 import docker
 from constellation import docker_util
 
 from src.montagu_deploy.config import MontaguConfig
 from src.montagu_deploy.montagu_constellation import MontaguConstellation
-
 from tests.utils import http_get
 
 
@@ -18,8 +13,6 @@ def test_start_and_stop():
     obj.start()
 
     cl = docker.client.from_env()
-    containers = cl.containers.list()
-    assert len(containers) == 10
 
     assert docker_util.network_exists(cfg.network)
     assert docker_util.volume_exists(cfg.volumes["db"])
@@ -40,6 +33,12 @@ def test_start_and_stop():
     assert docker_util.container_exists("montagu-mq")
     assert docker_util.container_exists("montagu-flower")
     assert docker_util.container_exists("montagu-task-queue")
+    assert docker_util.container_exists("montagu-fake-smtp")
+
+    containers = cl.containers.list()
+    print([c.name for c in containers])
+    print(get_container(cfg, "task_queue").logs())
+    assert len(containers) == 10
 
     obj.stop(kill=True, remove_volumes=True)
 
@@ -141,5 +140,3 @@ def test_proxy_configured_ssl():
 def get_container(cfg, name):
     cl = docker.client.from_env()
     return cl.containers.get(f"{cfg.container_prefix}-{cfg.containers[name]}")
-
-

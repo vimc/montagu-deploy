@@ -21,7 +21,7 @@ class MontaguConfig:
             "guidance": config.config_string(dat, ["volumes", "guidance"]),
             "static": config.config_string(dat, ["volumes", "static"]),
             "static_logs": config.config_string(dat, ["volumes", "static_logs"]),
-            "mq": config.config_string(dat, ["volumes", "mq"])
+            "mq": config.config_string(dat, ["volumes", "mq"]),
         }
 
         self.container_prefix = config.config_string(dat, ["container_prefix"])
@@ -96,7 +96,7 @@ class MontaguConfig:
             "static": "static",
             "mq": "mq",
             "flower": "flower",
-            "task_queue": "task-queue"
+            "task_queue": "task-queue",
         }
 
         if self.fake_smtp_ref:

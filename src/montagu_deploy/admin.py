@@ -1,7 +1,4 @@
-from os.path import join, abspath
-
 import docker
-from constellation import docker_util
 
 
 def add_user(cfg, name, username, email, password):
@@ -22,8 +19,5 @@ def add_user_to_group(cfg, username, modelling_group):
 def run(cfg, args):
     image = str(cfg.images["api_admin"])
     client = docker.client.from_env()
-    result = client.containers.run(image,
-                                   args,
-                                   network=cfg.network,
-                                   stderr=True)
+    result = client.containers.run(image, args, network=cfg.network, stderr=True)
     print(result.decode("UTF-8"))
