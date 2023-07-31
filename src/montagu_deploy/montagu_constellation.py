@@ -89,24 +89,26 @@ def task_queue_container(cfg):
     mounts = [
         constellation.ConstellationMount("burden_estimates", "/home/worker/burden_estimate_files"),
     ]
-    env = {
-        "YOUTRACK_TOKEN": cfg.youtrack_token
-    }
     return constellation.ConstellationContainer(name, cfg.task_queue_ref, configure=task_queue_configure,
-                                                mounts=mounts, environment=env)
+                                                mounts=mounts)
 
 
 def task_queue_configure(container, cfg):
     print("[task-queue] Configuring task-queue container")
-    local_config_file = join(cfg.path, "task-queue.yml")
-    with open(local_config_file, "r") as ymlfile:
-        config = yaml.load(ymlfile, Loader=yaml.FullLoader)
-        config["servers"]["youtrack"]["token"] = cfg.youtrack_token
+    task_queue_config = {
+        "host": cfg.containers["mq"],
+        "servers": cfg.task_queue_servers,
+        "tasks": cfg.task_queue_tasks
+    }
+    task_queue_config["servers"]["montagu"]["url"] = f"http://{cfg.containers['api']}:8080"
+    if cfg.fake_smtp_ref:
+        task_queue_config["servers"]["smtp"]["host"] = cfg.containers["fake_smtp"]
+        task_queue_config["servers"]["smtp"]["port"] = 1025
     reports_cfg_filename = join(cfg.path, "diagnostic-reports.yml")
     with open(reports_cfg_filename, "r") as ymlfile:
         diag_reports = yaml.load(ymlfile, Loader=yaml.FullLoader)
-    config["tasks"]["diagnostic_reports"]["reports"] = diag_reports
-    docker_util.string_into_container(yaml.dump(config), container, "home/worker/config/config.yml")
+    task_queue_config["tasks"]["diagnostic_reports"]["reports"] = diag_reports
+    docker_util.string_into_container(yaml.dump(task_queue_config), container, "home/worker/config/config.yml")
 
 
 def fake_smtp_container(cfg):

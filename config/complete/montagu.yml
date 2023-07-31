@@ -120,5 +120,26 @@ task_queue:
   name: task-queue-worker
   tag: master
   youtrack_token: "faketoken"
+  servers:
+    montagu:
+      user: test.user@example.com
+      password: password
+    orderlyweb:
+      url: http://orderly-web-web:8888
+    youtrack:
+      token: faketoken
+    smtp:
+      host: smtp.cc.ic.ac.uk
+      port: 587
+      user: montagu
+      password: p@ssword
+      from: montagu-notifications@imperial.ac.uk
+  tasks:
+    diagnostic_reports:
+      use_additional_recipients: true
+      poll_seconds: 5
+      reports:
+    archive_folder_contents:
+      min_file_age_seconds: 3600
 
-orderly_web_api_url: ttps://localhost/reports/api/v2
+orderly_web_api_url: https://localhost/reports/api/v2

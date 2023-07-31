@@ -54,39 +54,45 @@ def test_task_queue():
     cfg = MontaguConfig(path)
     try:
         youtrack_token = os.environ["YOUTRACK_TOKEN"]
+        os.environ["VAULT_AUTH_GITHUB_TOKEN"] = os.environ["VAULT_TOKEN"]
+        with vault_dev.server() as s:
+            cl = s.client()
+            enable_github_login(cl)
+            cl.write("secret/youtrack/token", value=youtrack_token)
+            vault_addr = "http://localhost:{}".format(s.port)
 
-        orderly_web.start(orderly_config_path)
-        cli.main(["start", path])
+            orderly_web.start(orderly_config_path)
+            cli.main(["start", path, f"--option=vault.addr={vault_addr}"])
 
-        # wait for API to be ready
-        http_get("https://localhost/api/v1")
+            # wait for API to be ready
+            http_get("https://localhost/api/v1")
 
-        add_task_queue_user(cfg, orderly_config_path)
-        app = celery.Celery(broker="redis://localhost//",
-                            backend="redis://")
-        sig = "run-diagnostic-reports"
-        args = ["testGroup", "testDisease", "testTouchstone-1",
-                "2020-11-04T12:21:15", "no_vaccination"]
-        signature = app.signature(sig, args)
-        versions = signature.delay().get()
-        assert len(versions) == 1
-        # check expected notification email was sent to fake smtp server
-        emails = requests.get("http://localhost:1080/api/emails").json()
-        assert len(emails) == 1
-        s = "VIMC diagnostic report: testTouchstone-1 - testGroup - testDisease"
-        assert emails[0]["subject"] == s
-        assert emails[0]["to"]["value"][0][
-                   "address"] == "minimal_modeller@example.com"
-        yt = YTClient('https://mrc-ide.myjetbrains.com/youtrack/',
-                      token=os.environ["YOUTRACK_TOKEN"])
-        issues = yt.get_issues("tag: {}".format("testTouchstone-1"))
-        assert len(issues) == 1
-        yt.run_command(Command(issues, "delete"))
+            add_task_queue_user(cfg, orderly_config_path)
+            app = celery.Celery(broker="redis://localhost//",
+                                backend="redis://")
+            sig = "run-diagnostic-reports"
+            args = ["testGroup", "testDisease", "testTouchstone-1",
+                    "2020-11-04T12:21:15", "no_vaccination"]
+            signature = app.signature(sig, args)
+            versions = signature.delay().get()
+            assert len(versions) == 1
+            # check expected notification email was sent to fake smtp server
+            emails = requests.get("http://localhost:1080/api/emails").json()
+            assert len(emails) == 1
+            s = "VIMC diagnostic report: testTouchstone-1 - testGroup - testDisease"
+            assert emails[0]["subject"] == s
+            assert emails[0]["to"]["value"][0][
+                       "address"] == "minimal_modeller@example.com"
+            yt = YTClient('https://mrc-ide.myjetbrains.com/youtrack/',
+                          token=youtrack_token)
+            issues = yt.get_issues("tag: {}".format("testTouchstone-1"))
+            assert len(issues) == 1
+            yt.run_command(Command(issues, "delete"))
     finally:
         with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
             prompt.return_value = True
-            cli.main(["stop", path, "--kill", "--volumes", "--network"])
             orderly_web.stop(orderly_config_path, kill=True)
+           # cli.main(["stop", path, "--kill", "--volumes", "--network"])
 
 
 def add_task_queue_user(cfg, orderly_config_path):

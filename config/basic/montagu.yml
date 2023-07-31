@@ -97,7 +97,24 @@ flower:
 task_queue:
   name: task-queue-worker
   tag: master
-  youtrack_token: "faketoken"
+  tasks:
+    diagnostic_reports:
+      use_additional_recipients: false
+      poll_seconds: 5
+    archive_folder_contents:
+      min_file_age_seconds: 3600
+  servers:
+    youtrack:
+      token: faketoken
+    orderlyweb:
+      url: http://orderly-web-web:8888
+    montagu:
+      user: montagu-task@imperial.ac.uk
+      password: password
+    smtp:
+      from: montagu-notifications@imperial.ac.uk
+# If fake_smtp_server is provided, the task_queue will use this as its smtp server
+# Note this will override other config provided in the task_queue section above
 fake_smtp_server:
   repo: reachfive
   name: fake-smtp-server

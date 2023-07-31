@@ -81,7 +81,8 @@ class MontaguConfig:
         self.flower_ref = self.build_ref(dat, "flower")
         self.flower_port = config.config_integer(dat, ["flower", "port"])
         self.task_queue_ref = self.build_ref(dat, "task_queue")
-        self.youtrack_token = config.config_string(dat, ["task_queue", "youtrack_token"])
+        self.task_queue_tasks = config.config_dict(dat, ["task_queue", "tasks"])
+        self.task_queue_servers = config.config_dict(dat, ["task_queue", "servers"])
         if "fake_smtp_server" in dat:
             self.fake_smtp_ref = self.build_ref(dat, "fake_smtp_server")
         else:
