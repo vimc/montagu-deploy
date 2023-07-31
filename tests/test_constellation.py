@@ -41,7 +41,7 @@ def test_start_and_stop():
     assert docker_util.container_exists("montagu-flower")
     assert docker_util.container_exists("montagu-task-queue")
 
-    obj.stop(kill=True, volumes=True)
+    obj.stop(kill=True, remove_volumes=True)
 
 
 def test_api_configured():
@@ -64,7 +64,7 @@ def test_api_configured():
     res = http_get("https://localhost/api/v1")
     assert '"status": "success"' in res
 
-    obj.stop(kill=True, volumes=True)
+    obj.stop(kill=True, remove_volumes=True)
 
     cfg = MontaguConfig("config/complete")
     obj = MontaguConstellation(cfg)
@@ -76,7 +76,7 @@ def test_api_configured():
     assert "email.password=changeme" in api_config
     assert "flow.url=fakeurl" in api_config
 
-    obj.stop(kill=True, volumes=True)
+    obj.stop(kill=True, remove_volumes=True)
 
 
 def test_proxy_configured_self_signed():
@@ -96,7 +96,7 @@ def test_proxy_configured_self_signed():
     res = http_get("https://localhost")
     assert "Montagu" in res
 
-    obj.stop(kill=True, volumes=True)
+    obj.stop(kill=True, remove_volumes=True)
 
 
 def test_db_configured():
@@ -118,7 +118,7 @@ def test_db_configured():
 
     assert "barman" in res
 
-    obj.stop(kill=True, volumes=True)
+    obj.stop(kill=True, remove_volumes=True)
 
 
 def test_proxy_configured_ssl():
@@ -135,7 +135,7 @@ def test_proxy_configured_ssl():
     assert key == "k3y"
     assert param == "param"
 
-    obj.stop(kill=True, volumes=True)
+    obj.stop(kill=True, remove_volumes=True)
 
 
 def get_container(cfg, name):

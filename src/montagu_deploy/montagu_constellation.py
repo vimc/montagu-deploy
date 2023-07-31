@@ -194,11 +194,8 @@ def api_container(cfg):
         constellation.ConstellationMount("burden_estimates", "/upload_dir"),
         constellation.ConstellationMount("emails", "/tmp/emails"),  # noqa S108
     ]
-    ports = []
-    if cfg.dev_mode:
-        ports.append(8080)
     return constellation.ConstellationContainer(name, cfg.api_ref, mounts=mounts,
-                                                configure=api_configure, ports=ports)
+                                                configure=api_configure)
 
 
 def api_configure(container, cfg):

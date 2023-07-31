@@ -92,7 +92,7 @@ def test_task_queue():
         with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
             prompt.return_value = True
             orderly_web.stop(orderly_config_path, kill=True)
-           # cli.main(["stop", path, "--kill", "--volumes", "--network"])
+            cli.main(["stop", path, "--kill", "--volumes", "--network"])
 
 
 def add_task_queue_user(cfg, orderly_config_path):

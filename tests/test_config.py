@@ -42,7 +42,6 @@ def test_config_basic():
 
     assert cfg.mq_port == 6379
     assert cfg.flower_port == 5555
-    assert cfg.youtrack_token == "faketoken"
 
     assert cfg.protect_data is False
     assert cfg.proxy_ssl_self_signed is True

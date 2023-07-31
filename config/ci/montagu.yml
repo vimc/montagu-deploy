@@ -32,10 +32,6 @@ network: montagu-network
 # Domain where this instance of Montagu will be deployed. E.g. science.montagu.dide.ic.uk
 hostname: localhost
 
-# In dev mode, the API port is exposed to the host. This is used only for testing and must
-# be turned off in production!
-dev_mode: false
-
 ## Names of the docker volumes to use
 volumes:
   db: db_volume

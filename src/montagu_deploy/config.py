@@ -13,7 +13,6 @@ class MontaguConfig:
         self.vault = config.config_vault(dat, ["vault"])
         self.network = config.config_string(dat, ["network"])
         self.protect_data = config.config_boolean(dat, ["protect_data"])
-        self.dev_mode = config.config_boolean(dat, ["dev_mode"])
         self.volumes = {
             "db": config.config_string(dat, ["volumes", "db"]),
             "emails": config.config_string(dat, ["volumes", "emails"]),

@@ -16,10 +16,6 @@ network: montagu-network
 # Domain where this instance of Montagu will be deployed. E.g. science.montagu.dide.ic.uk
 hostname: localhost
 
-# In dev mode, the API port is exposed to the host. This is used only for testing and must
-# be turned off in production!
-dev_mode: True
-
 ## Names of the docker volumes to use
 volumes:
   db: db_volume
@@ -113,7 +109,7 @@ task_queue:
       password: password
     smtp:
       from: montagu-notifications@imperial.ac.uk
-# If fake_smtp_server is provided, the task_queue will use this as its smtp server
+# If fake_smtp_server config is provided, the task_queue will use this as its smtp server
 # Note this will override other config provided in the task_queue section above
 fake_smtp_server:
   repo: reachfive
