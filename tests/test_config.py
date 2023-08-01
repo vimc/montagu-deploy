@@ -15,21 +15,23 @@ def test_config_basic():
     assert cfg.volumes["static_logs"] == "static_logs"
     assert cfg.container_prefix == "montagu"
 
-    assert len(cfg.containers) == 6
+    assert len(cfg.containers) == 7
     assert cfg.containers["api"] == "api"
     assert cfg.containers["db"] == "db"
     assert cfg.containers["admin"] == "admin"
     assert cfg.containers["contrib"] == "contrib"
     assert cfg.containers["static"] == "static"
     assert cfg.containers["proxy"] == "proxy"
+    assert cfg.containers["metrics"] == "proxy-metrics"
 
-    assert len(cfg.images) == 7
+    assert len(cfg.images) == 8
     assert str(cfg.images["db"]) == "vimc/montagu-db:master"
     assert str(cfg.images["api"]) == "vimc/montagu-api:master"
     assert str(cfg.images["admin"]) == "vimc/montagu-admin-portal:master"
     assert str(cfg.images["contrib"]) == "vimc/montagu-contrib-portal:master"
     assert str(cfg.images["static"]) == "vimc/montagu-static:master"
     assert str(cfg.images["proxy"]) == "vimc/montagu-reverse-proxy:vimc-7152"
+    assert str(cfg.images["metrics"]) == "nginx/nginx-prometheus-exporter:0.10.0"
     assert str(cfg.images["db_migrate"]) == "vimc/montagu-migrate:master"
 
     assert cfg.protect_data is False
