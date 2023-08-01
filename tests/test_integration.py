@@ -79,10 +79,12 @@ def test_task_queue():
             subj = "VIMC diagnostic report: testTouchstone-1 - testGroup - testDisease"
             assert emails[0]["subject"] == subj
             assert emails[0]["to"]["value"][0]["address"] == "minimal_modeller@example.com"
-            yt = YTClient("https://mrc-ide.myjetbrains.com/youtrack/", token=youtrack_token)
-            issues = yt.get_issues("tag: {}".format("testTouchstone-1"))
-            assert len(issues) == 1
-            yt.run_command(Command(issues, "delete"))
+            if not os.getenv("GITHUB_ACTIONS"):
+                # skip on CI because running these checks in parallel is not reliable
+                yt = YTClient("https://mrc-ide.myjetbrains.com/youtrack/", token=youtrack_token)
+                issues = yt.get_issues("tag: {}".format("testTouchstone-1"))
+                assert len(issues) == 1
+                yt.run_command(Command(issues, "delete"))
     finally:
         with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
             prompt.return_value = True

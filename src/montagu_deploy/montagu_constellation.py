@@ -104,7 +104,7 @@ def task_queue_configure(container, cfg):
         diag_reports = yaml.safe_load(ymlfile)
     task_queue_config["tasks"]["diagnostic_reports"]["reports"] = diag_reports
     docker_util.string_into_container(yaml.dump(task_queue_config), container, "/home/worker/config/config.yml")
-    exec_safely(container, ["chown", "worker:worker", "/home/worker/config/config.yml"], privileged=True)
+    exec_safely(container, ["chown", "worker:worker", "/home/worker/config/config.yml"], user="root")
 
 
 def fake_smtp_container(cfg):
