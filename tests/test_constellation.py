@@ -36,8 +36,6 @@ def test_start_and_stop():
     assert docker_util.container_exists("montagu-fake-smtp")
 
     containers = cl.containers.list()
-    print([c.name for c in containers])
-    print(get_container(cfg, "task_queue").logs())
     assert len(containers) == 10
 
     obj.stop(kill=True, remove_volumes=True)
