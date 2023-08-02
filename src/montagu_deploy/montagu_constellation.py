@@ -104,7 +104,7 @@ def task_queue_configure(container, cfg):
         diag_reports = yaml.safe_load(ymlfile)
     task_queue_config["tasks"]["diagnostic_reports"]["reports"] = diag_reports
     docker_util.string_into_container(yaml.dump(task_queue_config), container, "/home/worker/config/config.yml")
-    exec_safely(container, ["chown", "worker:worker", "/home/worker/config/config.yml"], user="root")
+    docker_util.exec_safely(container, ["chown", "worker:worker", "/home/worker/config/config.yml"], user="root")
 
 
 def fake_smtp_container(cfg):
@@ -250,12 +250,3 @@ def proxy_configure(container, cfg):
         docker_util.string_into_container(cfg.ssl_certificate, container, join(ssl_path, "certificate.pem"))
         docker_util.string_into_container(cfg.ssl_key, container, join(ssl_path, "ssl_key.pem"))
         docker_util.string_into_container(cfg.dhparam, container, join(ssl_path, "dhparam.pem"))
-
-
-def exec_safely(container, args, **kwargs):
-    ans = container.exec_run(args, **kwargs)
-    if ans[0] != 0:
-        print(ans[1].decode("UTF-8"))
-        msg = "Error running command (see above for log)"
-        raise Exception(msg)
-    return ans
