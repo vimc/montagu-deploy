@@ -10,8 +10,9 @@ from constellation import docker_util
 from YTClient.YTClient import YTClient
 from YTClient.YTDataClasses import Command
 
-from src.montagu_deploy import admin, cli
+from src.montagu_deploy import cli
 from src.montagu_deploy.config import MontaguConfig
+from tests import admin
 from tests.utils import http_get
 
 
