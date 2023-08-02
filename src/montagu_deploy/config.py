@@ -96,4 +96,8 @@ class MontaguConfig:
     def build_ref(self, dat, section):
         name = config.config_string(dat, [section, "name"])
         tag = config.config_string(dat, [section, "tag"])
-        return constellation.ImageReference(self.repo, name, tag)
+        if "repo" in dat[section]:
+            repo = config.config_string(dat, [section, "repo"])
+        else:
+            repo = self.repo
+        return constellation.ImageReference(repo, name, tag)

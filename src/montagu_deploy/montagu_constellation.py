@@ -208,9 +208,10 @@ def proxy_configure(container, cfg):
 def start_proxy_metrics(cfg):
     name = "{}-{}".format(cfg.container_prefix, cfg.containers["metrics"])
     proxy_name = cfg.containers["proxy"]
-    print("Starting {} ({})".format(cfg.containers["metrics"], str(cfg.proxy_metrics_ref)))
+    image = str(cfg.proxy_metrics_ref)
+    print("Starting {} ({})".format(cfg.containers["metrics"], image))
     docker.from_env().containers.run(
-        "nginx/nginx-prometheus-exporter:0.4.1",
+        image,
         restart_policy={"Name": "always"},
         ports={"9113/tcp": 9113},
         command=f'-nginx.scrape-uri "http://{proxy_name}/basic_status"',
