@@ -3,7 +3,7 @@ from constellation import docker_util
 
 from src.montagu_deploy.config import MontaguConfig
 from src.montagu_deploy.montagu_constellation import MontaguConstellation
-from tests.utils import http_get
+from tests.utils import get_container, http_get
 
 
 def test_start_and_stop():
@@ -64,7 +64,7 @@ def test_api_configured():
 
     obj.stop(kill=True, remove_volumes=True)
 
-    cfg = MontaguConfig("config/complete")
+    cfg = MontaguConfig("config/ssl")
     obj = MontaguConstellation(cfg)
 
     obj.start()
@@ -98,7 +98,7 @@ def test_proxy_configured_self_signed():
 
 
 def test_db_configured():
-    cfg = MontaguConfig("config/complete")
+    cfg = MontaguConfig("config/ssl")
     obj = MontaguConstellation(cfg)
 
     obj.start()
@@ -120,7 +120,7 @@ def test_db_configured():
 
 
 def test_proxy_configured_ssl():
-    cfg = MontaguConfig("config/complete")
+    cfg = MontaguConfig("config/ssl")
     obj = MontaguConstellation(cfg)
 
     obj.start()
@@ -144,8 +144,3 @@ def test_metrics():
     http_get("http://localhost:9113/metrics")
 
     obj.stop(kill=True)
-
-
-def get_container(cfg, name):
-    cl = docker.client.from_env()
-    return cl.containers.get(f"{cfg.container_prefix}-{cfg.containers[name]}")

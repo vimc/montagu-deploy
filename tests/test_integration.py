@@ -13,7 +13,7 @@ from YTClient.YTDataClasses import Command
 from src.montagu_deploy import cli
 from src.montagu_deploy.config import MontaguConfig
 from tests import admin
-from tests.utils import http_get
+from tests.utils import get_container, http_get
 
 
 def test_start_stop_status():
@@ -49,8 +49,26 @@ def test_start_stop_status():
             cli.main(["stop", path, "--kill", "--volumes", "--network"])
 
 
+def test_guidance_reports():
+    orderly_config_path = "tests/guidance"
+    path = "config/guidance"
+    cfg = MontaguConfig(path)
+    try:
+        orderly_web.start(orderly_config_path)
+        cli.main(["start", path])
+        contrib = get_container(cfg, "contrib")
+        docker_util.string_from_container(
+            contrib, "/usr/share/nginx/html/guidance/example/20190626-075732-03e0a7da/archive/report.html"
+        )
+    finally:
+        with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
+            prompt.return_value = True
+            orderly_web.stop(orderly_config_path, kill=True)
+            cli.main(["stop", path, "--kill", "--volumes", "--network"])
+
+
 def test_task_queue():
-    orderly_config_path = "tests"
+    orderly_config_path = "tests/task_queue"
     path = "config/ci"
     cfg = MontaguConfig(path)
     try:

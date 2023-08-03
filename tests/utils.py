@@ -2,9 +2,11 @@ import ssl
 import time
 import urllib
 
-
 # Because we wait for a go signal to come up, we might not be able to
 # make the request right away:
+import docker
+
+
 def http_get(url, retries=5, poll=0.5):
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
@@ -18,3 +20,8 @@ def http_get(url, retries=5, poll=0.5):
             time.sleep(poll)
             error = e
     raise error
+
+
+def get_container(cfg, name):
+    cl = docker.client.from_env()
+    return cl.containers.get(f"{cfg.container_prefix}-{cfg.containers[name]}")

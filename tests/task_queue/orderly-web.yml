@@ -14,7 +14,7 @@ network: montagu-network
 ##
 ## (More volumes are anticipated as the tool develops)
 volumes:
-  orderly: orderly_web_volume
+  orderly: montagu_orderly_volume
   proxy_logs: orderly_web_proxy_logs
   redis: orderly_web_redis_data
 

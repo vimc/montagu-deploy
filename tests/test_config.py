@@ -15,6 +15,7 @@ def test_config_basic():
     assert cfg.volumes["static_logs"] == "static_logs"
     assert cfg.volumes["mq"] == "mq"
     assert cfg.container_prefix == "montagu"
+    assert cfg.orderly_volume_name == "montagu_orderly_volume"
 
     assert len(cfg.containers) == 11
 
@@ -69,22 +70,30 @@ def test_config_email():
     with pytest.raises(Exception, match="flow_url"):
         MontaguConfig("config/basic", options=options)
 
-    cfg = MontaguConfig("config/complete")
+    cfg = MontaguConfig("config/ssl")
     assert cfg.real_emails
     assert cfg.email_password == "changeme"
     assert cfg.email_flow_url == "fakeurl"
 
 
 def test_config_ssl():
-    cfg = MontaguConfig("config/complete")
+    cfg = MontaguConfig("config/ssl")
     assert cfg.proxy_ssl_self_signed is False
     assert cfg.ssl_certificate == "cert"
     assert cfg.ssl_key == "k3y"
     assert cfg.dhparam == "param"
 
 
+def test_config_guidance():
+    cfg = MontaguConfig("config/basic")
+    assert cfg.guidance_reports is None
+    cfg = MontaguConfig("config/guidance")
+    assert len(cfg.guidance_reports) == 1
+    assert cfg.guidance_reports[0] == "example/20230803-125403-dd77aa93/"
+
+
 def test_config_generates_root_db_password():
-    cfg = MontaguConfig("config/complete")
+    cfg = MontaguConfig("config/ssl")
     assert cfg.db_root_password == "changeme"
     cfg = MontaguConfig("config/basic")
     assert cfg.db_root_password != "changeme"
@@ -94,7 +103,7 @@ def test_config_generates_root_db_password():
 def test_config_streaming_replication():
     cfg = MontaguConfig("config/basic")
     assert not cfg.enable_streaming_replication
-    cfg = MontaguConfig("config/complete")
+    cfg = MontaguConfig("config/ssl")
     assert cfg.enable_streaming_replication
     assert cfg.db_users["barman"] == {"password": "barmanpassword", "option": "superuser"}
     assert cfg.db_users["streaming_barman"] == {"password": "streamingpassword", "option": "replication"}
