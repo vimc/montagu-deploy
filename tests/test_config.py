@@ -11,8 +11,6 @@ def test_config_basic():
     assert cfg.volumes["burden_estimates"] == "burden_estimate_files"
     assert cfg.volumes["guidance"] == "guidance_volume"
     assert cfg.volumes["templates"] == "template_volume"
-    assert cfg.volumes["static"] == "static_volume"
-    assert cfg.volumes["static_logs"] == "static_logs"
     assert cfg.volumes["mq"] == "mq"
     assert cfg.container_prefix == "montagu"
 
@@ -22,20 +20,18 @@ def test_config_basic():
     assert cfg.containers["db"] == "db"
     assert cfg.containers["admin"] == "admin"
     assert cfg.containers["contrib"] == "contrib"
-    assert cfg.containers["static"] == "static"
     assert cfg.containers["proxy"] == "proxy"
     assert cfg.containers["mq"] == "mq"
     assert cfg.containers["flower"] == "flower"
     assert cfg.containers["task_queue"] == "task-queue"
 
-    assert len(cfg.images) == 13
+    assert len(cfg.images) == 12
 
     assert cfg.containers["metrics"] == "proxy-metrics"
     assert str(cfg.images["db"]) == "vimc/montagu-db:master"
     assert str(cfg.images["api"]) == "vimc/montagu-api:master"
     assert str(cfg.images["admin"]) == "vimc/montagu-admin-portal:master"
     assert str(cfg.images["contrib"]) == "vimc/montagu-contrib-portal:master"
-    assert str(cfg.images["static"]) == "vimc/montagu-static:master"
     assert str(cfg.images["proxy"]) == "vimc/montagu-reverse-proxy:vimc-7152"
     assert str(cfg.images["mq"]) == "docker.io/redis:latest"
     assert str(cfg.images["flower"]) == "mher/flower:0.9.5"

@@ -15,13 +15,12 @@ class MontaguConstellation:
         db = db_container(cfg)
         admin = admin_container(cfg)
         contrib = contrib_container(cfg)
-        static = static_container(cfg)
         proxy = proxy_container(cfg)
         mq = mq_container(cfg)
         flower = flower_container(cfg)
         task_queue = task_queue_container(cfg)
 
-        containers = [api, db, admin, contrib, static, proxy, mq, flower, task_queue]
+        containers = [api, db, admin, contrib, proxy, mq, flower, task_queue]
 
         if cfg.fake_smtp_ref:
             fake_smtp = fake_smtp_container(cfg)
@@ -62,15 +61,6 @@ def contrib_container(cfg):
         constellation.ConstellationMount("guidance", "/usr/share/nginx/html/guidance"),
     ]
     return constellation.ConstellationContainer(name, cfg.contrib_ref, mounts=mounts)
-
-
-def static_container(cfg):
-    name = cfg.containers["static"]
-    mounts = [
-        constellation.ConstellationMount("static", "/www"),
-        constellation.ConstellationMount("static_logs", "/var/log/caddy"),
-    ]
-    return constellation.ConstellationContainer(name, cfg.static_ref, mounts=mounts)
 
 
 def mq_container(cfg):
