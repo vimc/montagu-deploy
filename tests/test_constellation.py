@@ -17,7 +17,7 @@ def test_start_and_stop():
 
     cl = docker.client.from_env()
     containers = cl.containers.list()
-    assert len(containers) == 6
+    assert len(containers) == 7
 
     assert docker_util.network_exists(cfg.network)
     assert docker_util.volume_exists(cfg.volumes["db"])
@@ -26,6 +26,7 @@ def test_start_and_stop():
     assert docker_util.container_exists("montagu-api")
     assert docker_util.container_exists("montagu-db")
     assert docker_util.container_exists("montagu-proxy")
+    assert docker_util.container_exists("montagu-proxy-metrics")
     assert docker_util.container_exists("montagu-admin")
     assert docker_util.container_exists("montagu-contrib")
 
@@ -122,6 +123,16 @@ def test_proxy_configured_ssl():
     assert cert == "cert"
     assert key == "k3y"
     assert param == "param"
+
+    obj.stop(kill=True)
+
+
+def test_metrics():
+    cfg = MontaguConfig("config/basic")
+    obj = MontaguConstellation(cfg)
+
+    obj.start()
+    http_get("http://localhost:9113/metrics")
 
     obj.stop(kill=True)
 

@@ -26,12 +26,20 @@ class MontaguConstellation:
 
     def start(self, **kwargs):
         self.obj.start(**kwargs)
+        # The proxy metrics container cannot be started via constellation, because
+        # it has to belong to the same network as the proxy as soon as it is started
+        # and constellation starts containers on the 'none' network. So we provide
+        # start/stop/status methods for the metrics container that mimic the
+        # constellation behaviour
+        start_proxy_metrics(self.cfg)
 
     def stop(self, **kwargs):
+        stop_proxy_metrics(self.cfg)
         self.obj.stop(**kwargs)
 
     def status(self):
         self.obj.status()
+        status_proxy_metrics(self.cfg)
 
 
 def admin_container(cfg):
@@ -195,3 +203,42 @@ def proxy_configure(container, cfg):
         docker_util.string_into_container(cfg.ssl_certificate, container, join(ssl_path, "certificate.pem"))
         docker_util.string_into_container(cfg.ssl_key, container, join(ssl_path, "ssl_key.pem"))
         docker_util.string_into_container(cfg.dhparam, container, join(ssl_path, "dhparam.pem"))
+
+
+def start_proxy_metrics(cfg):
+    name = "{}-{}".format(cfg.container_prefix, cfg.containers["metrics"])
+    proxy_name = cfg.containers["proxy"]
+    image = str(cfg.proxy_metrics_ref)
+    print("Starting {} ({})".format(cfg.containers["metrics"], image))
+    docker.from_env().containers.run(
+        image,
+        restart_policy={"Name": "always"},
+        ports={"9113/tcp": 9113},
+        command=f'-nginx.scrape-uri "http://{proxy_name}/basic_status"',
+        network=cfg.network,
+        name=name,
+        detach=True,
+    )
+
+
+def stop_proxy_metrics(cfg):
+    name = "{}-{}".format(cfg.container_prefix, cfg.containers["metrics"])
+    container = get_container(name)
+    if container:
+        print(f"Killing '{name}'")
+        container.remove(force=True)
+
+
+def status_proxy_metrics(cfg):
+    name = "{}-{}".format(cfg.container_prefix, cfg.containers["metrics"])
+    container = get_container(name)
+    status = container.status if container else "missing"
+    print("    - {} ({}): {}".format(cfg.containers["metrics"], name, status))
+
+
+def get_container(name):
+    client = docker.client.from_env()
+    try:
+        return client.containers.get(name)
+    except docker.errors.NotFound:
+        return None

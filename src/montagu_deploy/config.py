@@ -64,6 +64,7 @@ class MontaguConfig:
             self.dhparam = config.config_string(dat, ["proxy", "ssl", "dhparam"])
         self.proxy_port_http = config.config_integer(dat, ["proxy", "port_http"])
         self.proxy_port_https = config.config_integer(dat, ["proxy", "port_https"])
+        self.proxy_metrics_ref = self.build_ref(dat["proxy"], "metrics")
 
         # Portals
         self.admin_ref = self.build_ref(dat, "admin")
@@ -75,6 +76,7 @@ class MontaguConfig:
             "db": "db",
             "api": "api",
             "proxy": "proxy",
+            "metrics": "proxy-metrics",
             "admin": "admin",
             "contrib": "contrib",
             "static": "static",
@@ -84,6 +86,7 @@ class MontaguConfig:
             "db": self.db_ref,
             "api": self.api_ref,
             "proxy": self.proxy_ref,
+            "metrics": self.proxy_metrics_ref,
             "admin": self.admin_ref,
             "contrib": self.contrib_ref,
             "static": self.static_ref,
@@ -93,4 +96,8 @@ class MontaguConfig:
     def build_ref(self, dat, section):
         name = config.config_string(dat, [section, "name"])
         tag = config.config_string(dat, [section, "tag"])
-        return constellation.ImageReference(self.repo, name, tag)
+        if "repo" in dat[section]:
+            repo = config.config_string(dat, [section, "repo"])
+        else:
+            repo = self.repo
+        return constellation.ImageReference(repo, name, tag)
