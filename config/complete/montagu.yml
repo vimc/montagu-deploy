@@ -25,6 +25,7 @@ volumes:
   guidance: guidance_volume
   static: static_volume
   static_logs: static_logs
+  mq: mq
 
 api:
   name: montagu-api
@@ -32,6 +33,9 @@ api:
   email:
     password: "changeme"
     flow_url: "fakeurl"
+  admin:
+    name: montagu-cli
+    tag: master
 db:
   name: montagu-db
   tag: master
@@ -108,6 +112,41 @@ admin:
 static:
   name: montagu-static
   tag: master
+mq:
+  repo: docker.io
+  name: redis
+  tag: latest
+  port: 6379
+flower:
+  repo: mher
+  name: flower
+  tag: 0.9.5
+  port: 5555
+task_queue:
+  name: task-queue-worker
+  tag: master
+  youtrack_token: "faketoken"
+  servers:
+    montagu:
+      user: test.user@example.com
+      password: password
+    orderlyweb:
+      url: http://orderly-web-web:8888
+    youtrack:
+      token: faketoken
+    smtp:
+      host: smtp.cc.ic.ac.uk
+      port: 587
+      user: montagu
+      password: p@ssword
+      from: montagu-notifications@imperial.ac.uk
+  tasks:
+    diagnostic_reports:
+      use_additional_recipients: true
+      poll_seconds: 5
+      reports:
+    archive_folder_contents:
+      min_file_age_seconds: 3600
 
-orderly_web_api_url: http://montagu_orderly_web:8888/api/v2
+orderly_web_api_url: https://localhost/reports/api/v2
 orderly_volume_name: montagu_orderly_volume

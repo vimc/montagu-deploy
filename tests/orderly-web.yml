@@ -1,0 +1,83 @@
+## Prefix for container names; we'll use {container_prefix}-(orderly,web)
+container_prefix: orderly-web
+
+## The name of the docker network that containers will be attached to.
+## If you want to proxy OrderlyWeb to the host, you will need to
+## arrange a proxy on this network, or use dev_mode in the web section
+## below.
+network: montagu-network
+
+## Names of the docker volumes to use:
+##
+## orderly: stores the orderly archive
+## proxy_logs: stores logs from the reverse proxy (only used if proxy is given)
+##
+## (More volumes are anticipated as the tool develops)
+volumes:
+  orderly: orderly_web_volume
+  proxy_logs: orderly_web_proxy_logs
+  redis: orderly_web_redis_data
+
+## Redis configuration
+redis:
+  image:
+    name: redis
+    tag: "5.0"
+  volume: orderly_web_redis_data
+
+## Orderly configuration
+orderly:
+  ## Image to use for orderly.  This should build off of
+  ## vimc/orderly.server but can be extended to use whatever packages
+  ## you need.  The components repo, image and tag will be assembled as
+  ## <repo>/<name>:<tag> for the full docker image reference.
+  image:
+    repo: vimc
+    name: orderly.server
+    tag: master
+    worker_name: orderly.server
+  initial:
+    source: clone
+    url: https://github.com/vimc/montagu-task-queue-orderly
+
+## Api and Website configuration
+web:
+  ## Image to use for the web components.  As for the orderly
+  ## configuration these will be assembled as <repo>/<name>:<tag>.  In
+  ## addition, a second image with the database migration support will
+  ## be used as <repo>/<migrate>:<tag>.  It is not expected (unlike
+  ## the orderly image) that the 'name' and 'migrate' will need to be
+  ## changed often, and it is expected that a web image will go
+  ## together with corresponding migration and admin images.
+  image:
+    repo: vimc
+    name: orderly-web
+    tag: master
+    migrate: orderlyweb-migrate
+    admin: orderly-web-user-cli
+  ## Public-facing url for the whole web service, including protocol
+  ## (ideally https://), hostname and port (if not using standard
+  ## ports).  Here, we're going to use the same as for the proxy but
+  ## if you are using an external proxy then you'd use its hostname
+  ## and port.
+  url: https://localhost
+  ## If dev_mode is true then the port is exposed to the host (as
+  ## plain http).  Do not use in production.  The port is attached
+  ## only to the localhost and will not be available from other
+  ## machines
+  dev_mode: true
+  ## Port to use for the web service
+  port: 8888
+  ## Name of the web service (affects the UI)
+  name: OrderlyWeb
+  ## Email address of the web service
+  email: admin@example.com
+  ## Authentication configuration
+  auth:
+    ## Enable or disable fine grained permissions
+    fine_grained: true
+    ## Enable montagu authentication provider
+    montagu: true
+    ## If using Montagu auth you also need the following
+    montagu_url: https://localhost
+    montagu_api_url: http://api:8080/v1/
