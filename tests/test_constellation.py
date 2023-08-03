@@ -64,7 +64,7 @@ def test_api_configured():
 
     obj.stop(kill=True, remove_volumes=True)
 
-    cfg = MontaguConfig("config/ssl")
+    cfg = MontaguConfig("config/ci")
     obj = MontaguConstellation(cfg)
 
     obj.start()

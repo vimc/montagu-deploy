@@ -1,19 +1,3 @@
-vault:
-  ## Address of the vault server.  This should be a string if it is
-  ## present.
-  addr: ~
-  auth:
-    ## Authentication type - must be either "token" or the name of a
-    ## supported authentication method.  These seem to be poorly
-    ## documented in the hvac, but include "github" for github
-    ## authentication.
-    ##
-    ## On a vault client object, see auth.implemented_class_names for
-    ## a list, which is currently
-    ##
-    ##     azure, github, gcp, kubernetes, ldap, mfa, okta
-    method: github
-
 ## Prefix for container names; we'll use {container_prefix}-(container_name)
 container_prefix: montagu
 
@@ -56,7 +40,7 @@ db:
   name: montagu-db
   tag: master
   root_user: vimc
-  root_password: changeme
+  root_password: "changeme"
   migrate:
     name: montagu-migrate
     tag: master
@@ -94,16 +78,24 @@ db:
     - role_permission
 proxy:
   name: montagu-reverse-proxy
-  tag: vimc-7152
+  tag: master
   port_http: 80
   port_https: 443
   metrics:
     repo: nginx
     name: nginx-prometheus-exporter
-    tag: 0.10.0
+    tag: 0.4.1
 contrib:
   name: montagu-contrib-portal
   tag: master
+  # Optional: name and version of orderly guidance reports to be copied into the contrib
+  # portal container.
+  guidance_reports:
+    - internal-2017-demography-childmortality/20171114-152328-da1957c2/
+    - internal-2017-demography-kosovo/20171109-204911-45436ef8/
+    - internal-2017-demography-tuvalu/20171109-205800-aa3a35c2/
+    - internal-2017-demography-over80/20171114-094012-ed43d81c/
+    - internal-2017-demography-marshall/20171109-205347-89919a97/
 admin:
   name: montagu-admin-portal
   tag: master
@@ -123,27 +115,28 @@ flower:
 task_queue:
   name: task-queue-worker
   tag: master
-  tasks:
-    diagnostic_reports:
-      use_additional_recipients: false
-      poll_seconds: 5
-    archive_folder_contents:
-      min_file_age_seconds: 3600
+  youtrack_token: "faketoken"
   servers:
-    ## To use value from the vault, use the format VAULT:<path>:<key>
-    youtrack:
-      token: VAULT:secret/youtrack/token:value
+    montagu:
+      user: test.user@example.com
+      password: password
     orderlyweb:
       url: http://orderly-web-web:8888
-    montagu:
-      user: montagu-task@imperial.ac.uk
-      password: password
+    youtrack:
+      token: faketoken
     smtp:
+      host: smtp.cc.ic.ac.uk
+      port: 587
+      user: montagu
+      password: p@ssword
       from: montagu-notifications@imperial.ac.uk
-fake_smtp_server:
-  repo: reachfive
-  name: fake-smtp-server
-  tag: latest
+  tasks:
+    diagnostic_reports:
+      use_additional_recipients: true
+      poll_seconds: 5
+      reports:
+    archive_folder_contents:
+      min_file_age_seconds: 3600
 
 orderly_web_api_url: https://localhost/reports/api/v2
 orderly_volume_name: montagu_orderly_volume

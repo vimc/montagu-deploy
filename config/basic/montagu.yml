@@ -122,4 +122,3 @@ fake_smtp_server:
 
 orderly_web_api_url: https://localhost/reports/api/v2
 orderly_volume_name: montagu_orderly_volume
-
