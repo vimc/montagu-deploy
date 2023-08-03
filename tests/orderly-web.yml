@@ -14,7 +14,7 @@ network: montagu-network
 ##
 ## (More volumes are anticipated as the tool develops)
 volumes:
-  orderly: orderly_web_volume
+  orderly: montagu_orderly_volume
   proxy_logs: orderly_web_proxy_logs
   redis: orderly_web_redis_data
 
@@ -38,7 +38,7 @@ orderly:
     worker_name: orderly.server
   initial:
     source: clone
-    url: https://github.com/vimc/montagu-task-queue-orderly
+    url: https://github.com/reside-ic/orderly-example
 
 ## Api and Website configuration
 web:

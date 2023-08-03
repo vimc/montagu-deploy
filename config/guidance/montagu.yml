@@ -91,11 +91,7 @@ contrib:
   # Optional: name and version of orderly guidance reports to be copied into the contrib
   # portal container.
   guidance_reports:
-    - internal-2017-demography-childmortality/20171114-152328-da1957c2/
-    - internal-2017-demography-kosovo/20171109-204911-45436ef8/
-    - internal-2017-demography-tuvalu/20171109-205800-aa3a35c2/
-    - internal-2017-demography-over80/20171114-094012-ed43d81c/
-    - internal-2017-demography-marshall/20171109-205347-89919a97/
+    - example/20230803-125403-dd77aa93/
 admin:
   name: montagu-admin-portal
   tag: master

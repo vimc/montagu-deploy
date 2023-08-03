@@ -3,7 +3,7 @@ from constellation import docker_util
 
 from src.montagu_deploy.config import MontaguConfig
 from src.montagu_deploy.montagu_constellation import MontaguConstellation
-from tests.utils import http_get
+from tests.utils import get_container, http_get
 
 
 def test_start_and_stop():
@@ -144,8 +144,3 @@ def test_metrics():
     http_get("http://localhost:9113/metrics")
 
     obj.stop(kill=True)
-
-
-def get_container(cfg, name):
-    cl = docker.client.from_env()
-    return cl.containers.get(f"{cfg.container_prefix}-{cfg.containers[name]}")
