@@ -70,6 +70,12 @@ db:
     readonly:
       password: "readonlypassword"
       permissions: readonly
+    barman:
+      password: "barmanpassword"
+      option: superuser
+    streaming_barman:
+      password: "streamingpassword"
+      option: replication
   protected_tables:
     - gavi_support_level
     - activity_type
