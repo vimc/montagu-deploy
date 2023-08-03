@@ -17,7 +17,7 @@ def test_start_and_stop():
 
     cl = docker.client.from_env()
     containers = cl.containers.list()
-    assert len(containers) == 6
+    assert len(containers) == 7
 
     assert docker_util.network_exists(cfg.network)
     assert docker_util.volume_exists(cfg.volumes["db"])
@@ -26,6 +26,7 @@ def test_start_and_stop():
     assert docker_util.container_exists("montagu-api")
     assert docker_util.container_exists("montagu-db")
     assert docker_util.container_exists("montagu-proxy")
+    assert docker_util.container_exists("montagu-proxy-metrics")
     assert docker_util.container_exists("montagu-admin")
     assert docker_util.container_exists("montagu-contrib")
 
@@ -43,16 +44,14 @@ def test_api_configured():
 
     assert "app.url=https://localhost/api" in api_config
     assert "db.host=db" in api_config
-    assert "db.username=vimc" in api_config
-    assert "db.password=changeme" in api_config
+    assert "db.username=api" in api_config
+    assert "db.password=apipassword" in api_config
     assert "allow.localhost=False" in api_config
     assert "upload.dir=/upload_dir" in api_config
     assert "email.mode=real" not in api_config
 
-    # Once the db is configured we can test that the API is running by actually making a request to it
-    # but for now, just check the go_signal has been written
-    go = docker_util.string_from_container(api, "/etc/montagu/api/go_signal")
-    assert go is not None
+    res = http_get("https://localhost/api/v1")
+    assert '"status": "success"' in res
 
     obj.stop(kill=True)
 
@@ -89,6 +88,28 @@ def test_proxy_configured_self_signed():
     obj.stop(kill=True)
 
 
+def test_db_configured():
+    cfg = MontaguConfig("config/complete")
+    obj = MontaguConstellation(cfg)
+
+    obj.start()
+
+    db = get_container(cfg, "db")
+    res = docker_util.exec_safely(db, f'psql -U {cfg.db_root_user} -d postgres -c "\\du"')
+    res = res.output.decode("UTF-8")
+
+    for u in cfg.db_users:
+        assert u in res
+
+    query = "SELECT * FROM pg_replication_slots WHERE slot_name = 'barman'"
+    res = docker_util.exec_safely(db, f'psql -U {cfg.db_root_user} -d postgres -c "{query}"')
+    res = res.output.decode("UTF-8")
+
+    assert "barman" in res
+
+    obj.stop(kill=True)
+
+
 def test_proxy_configured_ssl():
     cfg = MontaguConfig("config/complete")
     obj = MontaguConstellation(cfg)
@@ -102,6 +123,16 @@ def test_proxy_configured_ssl():
     assert cert == "cert"
     assert key == "k3y"
     assert param == "param"
+
+    obj.stop(kill=True)
+
+
+def test_metrics():
+    cfg = MontaguConfig("config/basic")
+    obj = MontaguConstellation(cfg)
+
+    obj.start()
+    http_get("http://localhost:9113/metrics")
 
     obj.stop(kill=True)
 

@@ -1,3 +1,6 @@
+import random
+import string
+
 import constellation
 from constellation import config
 
@@ -34,8 +37,24 @@ class MontaguConfig:
 
         # DB
         self.db_ref = self.build_ref(dat, "db")
-        self.db_user = config.config_string(dat, ["db", "user"])
-        self.db_password = config.config_string(dat, ["db", "password"])
+        self.db_migrate_ref = self.build_ref(dat["db"], "migrate")
+        self.db_root_user = config.config_string(dat, ["db", "root_user"])
+        if "root_password" in dat["db"]:
+            self.db_root_password = config.config_string(dat, ["db", "root_password"])
+        else:
+            self.db_root_password = "".join(
+                random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(50)
+            )
+        self.db_users = config.config_dict(dat, ["db", "users"])
+        invalid = {
+            k: v for k, v in self.db_users.items() if "permissions" in v and v["permissions"] not in ["all", "readonly"]
+        }
+        if any(invalid):
+            invalid_str = ",".join(iter(invalid.keys()))
+            msg = f"Invalid database permissions for '{invalid_str}'. Supported values are 'all' and 'readonly'"
+            raise Exception(msg)
+        self.db_protected_tables = config.config_list(dat, ["db", "protected_tables"])
+        self.enable_streaming_replication = "barman" in self.db_users and "streaming_barman" in self.db_users
 
         # Proxy
         self.proxy_ref = self.build_ref(dat, "proxy")
@@ -46,6 +65,7 @@ class MontaguConfig:
             self.dhparam = config.config_string(dat, ["proxy", "ssl", "dhparam"])
         self.proxy_port_http = config.config_integer(dat, ["proxy", "port_http"])
         self.proxy_port_https = config.config_integer(dat, ["proxy", "port_https"])
+        self.proxy_metrics_ref = self.build_ref(dat["proxy"], "metrics")
 
         # Portals
         self.admin_ref = self.build_ref(dat, "admin")
@@ -58,6 +78,7 @@ class MontaguConfig:
             "db": "db",
             "api": "api",
             "proxy": "proxy",
+            "metrics": "proxy-metrics",
             "admin": "admin",
             "contrib": "contrib",
             "static": "static",
@@ -67,12 +88,18 @@ class MontaguConfig:
             "db": self.db_ref,
             "api": self.api_ref,
             "proxy": self.proxy_ref,
+            "metrics": self.proxy_metrics_ref,
             "admin": self.admin_ref,
             "contrib": self.contrib_ref,
             "static": self.static_ref,
+            "db_migrate": self.db_migrate_ref,
         }
 
     def build_ref(self, dat, section):
         name = config.config_string(dat, [section, "name"])
         tag = config.config_string(dat, [section, "tag"])
-        return constellation.ImageReference(self.repo, name, tag)
+        if "repo" in dat[section]:
+            repo = config.config_string(dat, [section, "repo"])
+        else:
+            repo = self.repo
+        return constellation.ImageReference(repo, name, tag)
