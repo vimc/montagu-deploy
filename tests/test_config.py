@@ -88,8 +88,8 @@ def test_config_guidance():
     cfg = MontaguConfig("config/basic")
     assert cfg.guidance_reports is None
     cfg = MontaguConfig("config/guidance")
-    assert len(cfg.guidance_reports) == 5
-    assert cfg.guidance_reports[0] == "internal-2017-demography-childmortality/20171114-152328-da1957c2/"
+    assert len(cfg.guidance_reports) == 1
+    assert cfg.guidance_reports[0] == "example/20230803-125403-dd77aa93/"
 
 
 def test_config_generates_root_db_password():
