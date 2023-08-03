@@ -88,6 +88,10 @@ proxy:
   tag: vimc-7152
   port_http: 80
   port_https: 443
+  metrics:
+    repo: nginx
+    name: nginx-prometheus-exporter
+    tag: 0.10.0
 contrib:
   name: montagu-contrib-portal
   tag: master
