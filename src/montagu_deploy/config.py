@@ -9,6 +9,7 @@ class MontaguConfig:
     def __init__(self, path, extra=None, options=None):
         dat = config.read_yaml(f"{path}/montagu.yml")
         dat = config.config_build(path, dat, extra, options)
+        self.path = path
         self.vault = config.config_vault(dat, ["vault"])
         self.network = config.config_string(dat, ["network"])
         self.protect_data = config.config_boolean(dat, ["protect_data"])
@@ -20,6 +21,7 @@ class MontaguConfig:
             "guidance": config.config_string(dat, ["volumes", "guidance"]),
             "static": config.config_string(dat, ["volumes", "static"]),
             "static_logs": config.config_string(dat, ["volumes", "static_logs"]),
+            "mq": config.config_string(dat, ["volumes", "mq"]),
         }
 
         self.container_prefix = config.config_string(dat, ["container_prefix"])
@@ -29,6 +31,7 @@ class MontaguConfig:
 
         # API
         self.api_ref = self.build_ref(dat, "api")
+        self.api_admin_ref = self.build_ref(dat["api"], "admin")
         self.real_emails = "email" in dat["api"]
         if self.real_emails:
             self.email_password = config.config_string(dat, ["api", "email", "password"])
@@ -72,6 +75,19 @@ class MontaguConfig:
 
         self.static_ref = self.build_ref(dat, "static")
 
+        # Task Q
+        self.mq_ref = self.build_ref(dat, "mq")
+        self.mq_port = config.config_integer(dat, ["mq", "port"])
+        self.flower_ref = self.build_ref(dat, "flower")
+        self.flower_port = config.config_integer(dat, ["flower", "port"])
+        self.task_queue_ref = self.build_ref(dat, "task_queue")
+        self.task_queue_tasks = config.config_dict(dat, ["task_queue", "tasks"])
+        self.task_queue_servers = config.config_dict(dat, ["task_queue", "servers"])
+        if "fake_smtp_server" in dat:
+            self.fake_smtp_ref = self.build_ref(dat, "fake_smtp_server")
+        else:
+            self.fake_smtp_ref = False
+
         self.containers = {
             "db": "db",
             "api": "api",
@@ -80,7 +96,13 @@ class MontaguConfig:
             "admin": "admin",
             "contrib": "contrib",
             "static": "static",
+            "mq": "mq",
+            "flower": "flower",
+            "task_queue": "task-queue",
         }
+
+        if self.fake_smtp_ref:
+            self.containers["fake_smtp"] = "fake-smtp"
 
         self.images = {
             "db": self.db_ref,
@@ -90,8 +112,15 @@ class MontaguConfig:
             "admin": self.admin_ref,
             "contrib": self.contrib_ref,
             "static": self.static_ref,
+            "mq": self.mq_ref,
+            "flower": self.flower_ref,
+            "task_queue": self.task_queue_ref,
+            "api_admin": self.api_admin_ref,
             "db_migrate": self.db_migrate_ref,
         }
+
+        if self.fake_smtp_ref:
+            self.images["fake_smtp"] = self.fake_smtp_ref
 
     def build_ref(self, dat, section):
         name = config.config_string(dat, [section, "name"])

@@ -25,10 +25,14 @@ volumes:
   guidance: guidance_volume
   static: static_volume
   static_logs: static_logs
+  mq: mq
 
 api:
   name: montagu-api
   tag: master
+  admin:
+    name: montagu-cli
+    tag: master
 db:
   name: montagu-db
   tag: master
@@ -80,5 +84,40 @@ admin:
 static:
   name: montagu-static
   tag: master
+mq:
+  repo: docker.io
+  name: redis
+  tag: latest
+  port: 6379
+flower:
+  repo: mher
+  name: flower
+  tag: 0.9.5
+  port: 5555
+task_queue:
+  name: task-queue-worker
+  tag: master
+  tasks:
+    diagnostic_reports:
+      use_additional_recipients: false
+      poll_seconds: 5
+    archive_folder_contents:
+      min_file_age_seconds: 3600
+  servers:
+    youtrack:
+      token: faketoken
+    orderlyweb:
+      url: http://orderly-web-web:8888
+    montagu:
+      user: montagu-task@imperial.ac.uk
+      password: password
+    smtp:
+      from: montagu-notifications@imperial.ac.uk
+# If fake_smtp_server config is provided, the task_queue will use this as its smtp server
+# Note this will override other config provided in the task_queue section above
+fake_smtp_server:
+  repo: reachfive
+  name: fake-smtp-server
+  tag: latest
 
-orderly_web_api_url: http://montagu_orderly_web:8888/api/v2
+orderly_web_api_url: https://localhost/reports/api/v2

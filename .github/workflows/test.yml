@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
       - name: Set up QEMU
@@ -35,6 +35,9 @@ jobs:
         run: |
           hatch run lint:style
       - name: Test
+        env:
+          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
+          YOUTRACK_TOKEN: ${{ secrets.YOUTRACK_TOKEN }}
         run: |
           hatch run cov-ci
       - name: Upload to Codecov

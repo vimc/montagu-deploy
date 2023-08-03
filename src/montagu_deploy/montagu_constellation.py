@@ -2,6 +2,7 @@ from os.path import join
 
 import constellation
 import docker
+import yaml
 from constellation import docker_util
 from psycopg2 import connect
 
@@ -16,8 +17,15 @@ class MontaguConstellation:
         contrib = contrib_container(cfg)
         static = static_container(cfg)
         proxy = proxy_container(cfg)
+        mq = mq_container(cfg)
+        flower = flower_container(cfg)
+        task_queue = task_queue_container(cfg)
 
-        containers = [api, db, admin, contrib, static, proxy]
+        containers = [api, db, admin, contrib, static, proxy, mq, flower, task_queue]
+
+        if cfg.fake_smtp_ref:
+            fake_smtp = fake_smtp_container(cfg)
+            containers.append(fake_smtp)
 
         self.cfg = cfg
         self.obj = constellation.Constellation(
@@ -63,6 +71,53 @@ def static_container(cfg):
         constellation.ConstellationMount("static_logs", "/var/log/caddy"),
     ]
     return constellation.ConstellationContainer(name, cfg.static_ref, mounts=mounts)
+
+
+def mq_container(cfg):
+    name = cfg.containers["mq"]
+    mounts = [
+        constellation.ConstellationMount("mq", "/data"),
+    ]
+    return constellation.ConstellationContainer(name, cfg.mq_ref, mounts=mounts, ports=[cfg.mq_port])
+
+
+def flower_container(cfg):
+    name = cfg.containers["flower"]
+    mq = cfg.containers["mq"]
+    env = {
+        "CELERY_BROKEN_URL": f"redis://{mq}//",
+        "CELERY_RESULT_BACKEND": f"redis://{mq}/0",
+        "FLOWER_PORT": cfg.flower_port,
+    }
+    return constellation.ConstellationContainer(name, cfg.flower_ref, ports=[cfg.flower_port], environment=env)
+
+
+def task_queue_container(cfg):
+    name = cfg.containers["task_queue"]
+    mounts = [
+        constellation.ConstellationMount("burden_estimates", "/home/worker/burden_estimate_files"),
+    ]
+    return constellation.ConstellationContainer(name, cfg.task_queue_ref, configure=task_queue_configure, mounts=mounts)
+
+
+def task_queue_configure(container, cfg):
+    print("[task-queue] Configuring task-queue container")
+    task_queue_config = {"host": cfg.containers["mq"], "servers": cfg.task_queue_servers, "tasks": cfg.task_queue_tasks}
+    task_queue_config["servers"]["montagu"]["url"] = f"http://{cfg.containers['api']}:8080"
+    if cfg.fake_smtp_ref:
+        task_queue_config["servers"]["smtp"]["host"] = cfg.containers["fake_smtp"]
+        task_queue_config["servers"]["smtp"]["port"] = 1025
+    reports_cfg_filename = join(cfg.path, "diagnostic-reports.yml")
+    with open(reports_cfg_filename) as ymlfile:
+        diag_reports = yaml.safe_load(ymlfile)
+    task_queue_config["tasks"]["diagnostic_reports"]["reports"] = diag_reports
+    docker_util.string_into_container(yaml.dump(task_queue_config), container, "/home/worker/config/config.yml")
+    docker_util.exec_safely(container, ["chown", "worker:worker", "/home/worker/config/config.yml"], user="root")
+
+
+def fake_smtp_container(cfg):
+    name = cfg.containers["fake_smtp"]
+    return constellation.ConstellationContainer(name, cfg.fake_smtp_ref, ports=[1025, 1080])
 
 
 def db_container(cfg):
@@ -165,7 +220,7 @@ def inject_api_config(container, cfg):
         "db.username": "api",
         "db.password": cfg.db_users["api"]["password"],
         "allow.localhost": False,
-        # TODO  "celery.flower.host",
+        "celery.flower.host": cfg.containers["flower"],
         "orderlyweb.api.url": cfg.orderly_web_api_url,
         "upload.dir": "/upload_dir",
     }
