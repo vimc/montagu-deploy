@@ -57,7 +57,9 @@ def test_guidance_reports():
         orderly_web.start(orderly_config_path)
         cli.main(["start", path])
         contrib = get_container(cfg, "contrib")
-        docker_util.string_from_container(contrib, "/usr/share/nginx/html/guidance/example/20190626-075732-03e0a7da")
+        docker_util.string_from_container(
+            contrib, "/usr/share/nginx/html/guidance/example/20190626-075732-03e0a7da/archive/report.html"
+        )
     finally:
         with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
             prompt.return_value = True
