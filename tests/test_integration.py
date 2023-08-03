@@ -25,7 +25,8 @@ def test_start_stop_status():
 
         cl = docker.client.from_env()
         containers = cl.containers.list()
-        assert len(containers) == 10
+        assert len(containers) == 12
+
         cfg = MontaguConfig(path)
         assert docker_util.network_exists(cfg.network)
         assert docker_util.volume_exists(cfg.volumes["db"])
