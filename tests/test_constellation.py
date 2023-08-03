@@ -64,7 +64,7 @@ def test_api_configured():
 
     obj.stop(kill=True, remove_volumes=True)
 
-    cfg = MontaguConfig("config/ci")
+    cfg = MontaguConfig("config/ssl")
     obj = MontaguConstellation(cfg)
 
     obj.start()
@@ -98,7 +98,7 @@ def test_proxy_configured_self_signed():
 
 
 def test_db_configured():
-    cfg = MontaguConfig("config/ci")
+    cfg = MontaguConfig("config/ssl")
     obj = MontaguConstellation(cfg)
 
     obj.start()
