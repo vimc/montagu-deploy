@@ -113,8 +113,8 @@ task_queue:
       password: password
     smtp:
       from: montagu-notifications@imperial.ac.uk
-# If fake_smtp_server config is provided, the task_queue will use this as its smtp server
-# Note this will override other config provided in the task_queue section above
+# Optional. If fake_smtp_server config is provided, the task_queue will use this as its smtp server
+# Note this will override other config provided in the task_queue section above.
 fake_smtp_server:
   repo: reachfive
   name: fake-smtp-server

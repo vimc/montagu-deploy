@@ -46,6 +46,7 @@ volumes:
 api:
   name: montagu-api
   tag: master
+  # Optional. To send real email notifications, a password and flowurl must be provided here.
   email:
     password: "changeme"
     flow_url: "fakeurl"
@@ -56,6 +57,7 @@ db:
   name: montagu-db
   tag: master
   root_user: vimc
+  # Optional. If root_password is not provided, the tool will randomly generate a secure root password.
   root_password: changeme
   migrate:
     name: montagu-migrate
@@ -140,6 +142,8 @@ task_queue:
       password: password
     smtp:
       from: montagu-notifications@imperial.ac.uk
+# Optional. If fake_smtp_server config is provided, the task_queue will use this as its smtp server
+# Note this will override other config provided in the task_queue section above.
 fake_smtp_server:
   repo: reachfive
   name: fake-smtp-server
