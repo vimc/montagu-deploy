@@ -14,6 +14,7 @@ def test_config_basic():
     assert cfg.volumes["static"] == "static_volume"
     assert cfg.volumes["static_logs"] == "static_logs"
     assert cfg.container_prefix == "montagu"
+    assert cfg.orderly_volume_name == "montagu_orderly_volume"
 
     assert len(cfg.containers) == 6
     assert cfg.containers["api"] == "api"
@@ -58,3 +59,11 @@ def test_config_ssl():
     assert cfg.ssl_certificate == "cert"
     assert cfg.ssl_key == "k3y"
     assert cfg.dhparam == "param"
+
+
+def test_config_guidance():
+    cfg = MontaguConfig("config/basic")
+    assert cfg.guidance_reports is None
+    cfg = MontaguConfig("config/complete")
+    assert len(cfg.guidance_reports) == 5
+    assert cfg.guidance_reports[0] == "internal-2017-demography-childmortality/20171114-152328-da1957c2/"

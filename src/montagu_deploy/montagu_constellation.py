@@ -1,6 +1,7 @@
 from os.path import join
 
 import constellation
+import docker.client
 from constellation import docker_util
 
 
@@ -41,7 +42,21 @@ def contrib_container(cfg):
         constellation.ConstellationMount("templates", "/usr/share/nginx/html/templates"),
         constellation.ConstellationMount("guidance", "/usr/share/nginx/html/guidance"),
     ]
-    return constellation.ConstellationContainer(name, cfg.contrib_ref, mounts=mounts)
+    return constellation.ConstellationContainer(name, cfg.contrib_ref, mounts=mounts, configure=contrib_configure)
+
+
+def contrib_configure(container, cfg):
+    if cfg.guidance_reports is not None:
+        print("[contrib] Configuring contrib portal")
+        for p in cfg.guidance_reports:
+            if len(p) > 0:
+                path_to_artefacts = join("archive", p, "*.html")
+                add_reports_to_contrib_portal(cfg, path_to_artefacts)
+
+
+def add_reports_to_contrib_portal(cfg, path_to_reports):
+    print("[contrib] Copying guidance reports from orderly to contrib portal")
+    copy_between_volumes(cfg.orderly_volume_name, cfg.volumes["guidance"], path_to_reports)
 
 
 def static_container(cfg):
@@ -125,3 +140,12 @@ def proxy_configure(container, cfg):
         docker_util.string_into_container(cfg.ssl_certificate, container, join(ssl_path, "certificate.pem"))
         docker_util.string_into_container(cfg.ssl_key, container, join(ssl_path, "ssl_key.pem"))
         docker_util.string_into_container(cfg.dhparam, container, join(ssl_path, "dhparam.pem"))
+
+
+def copy_between_volumes(source_volume, destination_volume, path_to_copy, destination_path="."):
+    client = docker.client.from_env()
+    cmd = "cd /to ; mkdir -p {} && find /from/{} -exec cp -a {{}} {} \;".format(destination_path, path_to_copy,
+                                                                               destination_path)
+    client.containers.run("alpine", ["ash", "-c", cmd], remove=True,
+                          mounts=[docker.types.Mount("/from", source_volume),
+                                  docker.types.Mount("/to", destination_volume)])

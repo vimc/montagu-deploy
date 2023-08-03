@@ -23,6 +23,7 @@ class MontaguConfig:
         self.repo = config.config_string(dat, ["repo"])
         self.hostname = config.config_string(dat, ["hostname"])
         self.orderly_web_api_url = config.config_string(dat, ["orderly_web_api_url"])
+        self.orderly_volume_name = config.config_string(dat, ["orderly_volume_name"])
 
         # API
         self.api_ref = self.build_ref(dat, "api")
@@ -49,6 +50,7 @@ class MontaguConfig:
         # Portals
         self.admin_ref = self.build_ref(dat, "admin")
         self.contrib_ref = self.build_ref(dat, "contrib")
+        self.guidance_reports = config.config_list(dat, ["contrib", "guidance_reports"], is_optional=True)
 
         self.static_ref = self.build_ref(dat, "static")
 

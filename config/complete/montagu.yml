@@ -57,6 +57,12 @@ proxy:
 contrib:
   name: montagu-contrib-portal
   tag: master
+  guidance_reports:
+    - internal-2017-demography-childmortality/20171114-152328-da1957c2/
+    - internal-2017-demography-kosovo/20171109-204911-45436ef8/
+    - internal-2017-demography-tuvalu/20171109-205800-aa3a35c2/
+    - internal-2017-demography-over80/20171114-094012-ed43d81c/
+    - internal-2017-demography-marshall/20171109-205347-89919a97/
 admin:
   name: montagu-admin-portal
   tag: master
@@ -65,3 +71,4 @@ static:
   tag: master
 
 orderly_web_api_url: http://montagu_orderly_web:8888/api/v2
+orderly_volume_name: montagu_orderly_volume

@@ -50,3 +50,4 @@ static:
   tag: master
 
 orderly_web_api_url: http://montagu_orderly_web:8888/api/v2
+orderly_volume_name: montagu_orderly_volume
