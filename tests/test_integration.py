@@ -62,7 +62,7 @@ def test_guidance_reports():
         with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
             prompt.return_value = True
             orderly_web.stop(orderly_config_path, kill=True)
-           # cli.main(["stop", path, "--kill", "--volumes", "--network"])
+        # cli.main(["stop", path, "--kill", "--volumes", "--network"])
 
 
 def xtest_task_queue():
