@@ -50,7 +50,7 @@ def test_start_stop_status():
 
 
 def test_guidance_reports():
-    orderly_config_path = "tests"
+    orderly_config_path = "tests/guidance"
     path = "config/guidance"
     cfg = MontaguConfig(path)
     try:
@@ -68,7 +68,7 @@ def test_guidance_reports():
 
 
 def test_task_queue():
-    orderly_config_path = "tests"
+    orderly_config_path = "tests/task_queue"
     path = "config/ci"
     cfg = MontaguConfig(path)
     try:
