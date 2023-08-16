@@ -11,37 +11,36 @@ def test_config_basic():
     assert cfg.volumes["burden_estimates"] == "burden_estimate_files"
     assert cfg.volumes["guidance"] == "guidance_volume"
     assert cfg.volumes["templates"] == "template_volume"
-    assert cfg.volumes["static"] == "static_volume"
-    assert cfg.volumes["static_logs"] == "static_logs"
     assert cfg.volumes["mq"] == "mq"
     assert cfg.container_prefix == "montagu"
 
-    assert len(cfg.containers) == 11
+    assert len(cfg.containers) == 10
 
     assert cfg.containers["api"] == "api"
     assert cfg.containers["db"] == "db"
     assert cfg.containers["admin"] == "admin"
     assert cfg.containers["contrib"] == "contrib"
-    assert cfg.containers["static"] == "static"
     assert cfg.containers["proxy"] == "proxy"
+    assert cfg.containers["metrics"] == "proxy-metrics"
     assert cfg.containers["mq"] == "mq"
     assert cfg.containers["flower"] == "flower"
     assert cfg.containers["task_queue"] == "task-queue"
+    assert cfg.containers["fake_smtp"] == "fake-smtp"
 
-    assert len(cfg.images) == 13
+    assert len(cfg.images) == 12
 
-    assert cfg.containers["metrics"] == "proxy-metrics"
     assert str(cfg.images["db"]) == "vimc/montagu-db:master"
     assert str(cfg.images["api"]) == "vimc/montagu-api:master"
     assert str(cfg.images["admin"]) == "vimc/montagu-admin-portal:master"
+    assert str(cfg.images["api_admin"]) == "vimc/montagu-cli:master"
     assert str(cfg.images["contrib"]) == "vimc/montagu-contrib-portal:master"
-    assert str(cfg.images["static"]) == "vimc/montagu-static:master"
     assert str(cfg.images["proxy"]) == "vimc/montagu-reverse-proxy:vimc-7152"
     assert str(cfg.images["mq"]) == "docker.io/redis:latest"
     assert str(cfg.images["flower"]) == "mher/flower:0.9.5"
     assert str(cfg.images["task_queue"]) == "vimc/task-queue-worker:master"
     assert str(cfg.images["metrics"]) == "nginx/nginx-prometheus-exporter:0.10.0"
     assert str(cfg.images["db_migrate"]) == "vimc/montagu-migrate:master"
+    assert str(cfg.images["fake_smtp"]) == "reachfive/fake-smtp-server:latest"
 
     assert cfg.mq_port == 6379
     assert cfg.flower_port == 5555

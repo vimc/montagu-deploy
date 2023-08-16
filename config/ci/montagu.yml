@@ -39,8 +39,6 @@ volumes:
   emails: emails
   templates: template_volume
   guidance: guidance_volume
-  static: static_volume
-  static_logs: static_logs
   mq: mq
 
 api:
@@ -97,9 +95,6 @@ contrib:
   tag: master
 admin:
   name: montagu-admin-portal
-  tag: master
-static:
-  name: montagu-static
   tag: master
 mq:
   repo: docker.io

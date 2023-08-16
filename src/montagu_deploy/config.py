@@ -19,8 +19,6 @@ class MontaguConfig:
             "burden_estimates": config.config_string(dat, ["volumes", "burden_estimates"]),
             "templates": config.config_string(dat, ["volumes", "templates"]),
             "guidance": config.config_string(dat, ["volumes", "guidance"]),
-            "static": config.config_string(dat, ["volumes", "static"]),
-            "static_logs": config.config_string(dat, ["volumes", "static_logs"]),
             "mq": config.config_string(dat, ["volumes", "mq"]),
         }
 
@@ -73,8 +71,6 @@ class MontaguConfig:
         self.admin_ref = self.build_ref(dat, "admin")
         self.contrib_ref = self.build_ref(dat, "contrib")
 
-        self.static_ref = self.build_ref(dat, "static")
-
         # Task Q
         self.mq_ref = self.build_ref(dat, "mq")
         self.mq_port = config.config_integer(dat, ["mq", "port"])
@@ -95,7 +91,6 @@ class MontaguConfig:
             "metrics": "proxy-metrics",
             "admin": "admin",
             "contrib": "contrib",
-            "static": "static",
             "mq": "mq",
             "flower": "flower",
             "task_queue": "task-queue",
@@ -111,7 +106,6 @@ class MontaguConfig:
             "metrics": self.proxy_metrics_ref,
             "admin": self.admin_ref,
             "contrib": self.contrib_ref,
-            "static": self.static_ref,
             "mq": self.mq_ref,
             "flower": self.flower_ref,
             "task_queue": self.task_queue_ref,

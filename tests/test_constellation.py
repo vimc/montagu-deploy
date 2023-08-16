@@ -18,8 +18,6 @@ def test_start_and_stop():
     assert docker_util.volume_exists(cfg.volumes["db"])
     assert docker_util.volume_exists(cfg.volumes["burden_estimates"])
     assert docker_util.volume_exists(cfg.volumes["emails"])
-    assert docker_util.volume_exists(cfg.volumes["static"])
-    assert docker_util.volume_exists(cfg.volumes["static_logs"])
     assert docker_util.volume_exists(cfg.volumes["mq"])
     assert docker_util.volume_exists(cfg.volumes["templates"])
     assert docker_util.volume_exists(cfg.volumes["guidance"])
@@ -30,14 +28,13 @@ def test_start_and_stop():
     assert docker_util.container_exists("montagu-proxy-metrics")
     assert docker_util.container_exists("montagu-admin")
     assert docker_util.container_exists("montagu-contrib")
-    assert docker_util.container_exists("montagu-static")
     assert docker_util.container_exists("montagu-mq")
     assert docker_util.container_exists("montagu-flower")
     assert docker_util.container_exists("montagu-task-queue")
     assert docker_util.container_exists("montagu-fake-smtp")
 
     containers = cl.containers.list()
-    assert len(containers) == 11
+    assert len(containers) == 10
 
     obj.stop(kill=True, remove_volumes=True)
 
