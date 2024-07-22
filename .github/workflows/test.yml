@@ -44,6 +44,7 @@ jobs:
           docker pull vimc/montagu-reverse-proxy:vimc-7152
           docker pull vimc/montagu-reverse-proxy:master
           docker pull redis
+          docker pull redis:5.0
           docker pull mher/flower:0.9.5
           docker pull vimc/task-queue-worker:master
           docker pull nginx/nginx-prometheus-exporter:0.10.0
