@@ -42,6 +42,7 @@ jobs:
           docker pull vimc/montagu-cli:master
           docker pull vimc/montagu-contrib-portal:master
           docker pull vimc/montagu-reverse-proxy:vimc-7152
+          docker pull vimc/montagu-reverse-proxy:master
           docker pull redis
           docker pull mher/flower:0.9.5
           docker pull vimc/task-queue-worker:master
