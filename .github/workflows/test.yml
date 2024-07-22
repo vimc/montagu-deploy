@@ -52,6 +52,8 @@ jobs:
           docker pull reachfive/fake-smtp-server:latest
           docker pull vimc/orderly.server:master
           docker pull vimc/orderly-web:master
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
       - name: Test
         env:
           VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
