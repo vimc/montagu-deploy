@@ -36,30 +36,30 @@ jobs:
           hatch run lint:style
       - name: Pull images
         run: |
-          docker pull vimc/montagu-api:master
-          docker pull vimc/montagu-db:master
-          docker pull vimc/montagu-admin-portal:master
-          docker pull vimc/montagu-cli:master
-          docker pull vimc/montagu-contrib-portal:master
-          docker pull vimc/montagu-reverse-proxy:vimc-7152
-          docker pull vimc/montagu-reverse-proxy:master
+          docker pull mher/flower:0.9.5
+          docker pull nginx/nginx-prometheus-exporter:0.10.0
+          docker pull reachfive/fake-smtp-server:latest
           docker pull redis
           docker pull redis:5.0
-          docker pull mher/flower:0.9.5
-          docker pull vimc/task-queue-worker:master
-          docker pull nginx/nginx-prometheus-exporter:0.10.0
+          docker pull vimc/montagu-admin-portal:master
+          docker pull vimc/montagu-api:master
+          docker pull vimc/montagu-cli:master
+          docker pull vimc/montagu-contrib-portal:master
+          docker pull vimc/montagu-db:master
           docker pull vimc/montagu-migrate:master
-          docker pull reachfive/fake-smtp-server:latest
-          docker pull vimc/orderly.server:master
+          docker pull vimc/montagu-reverse-proxy:master
+          docker pull vimc/montagu-reverse-proxy:vimc-7152
           docker pull vimc/orderly-web:master
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+          docker pull vimc/orderly.server:master
+          docker pull vimc/task-queue-worker:master
       - name: Test
         env:
           VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
           YOUTRACK_TOKEN: ${{ secrets.YOUTRACK_TOKEN }}
         run: |
           hatch run cov-ci
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
       - name: Upload to Codecov
         uses: codecov/codecov-action@v3
         with:
