@@ -51,6 +51,7 @@ jobs:
           docker pull vimc/montagu-migrate:master
           docker pull reachfive/fake-smtp-server:latest
           docker pull vimc/orderly.server:master
+          docker pull vimc/orderly-web:master
       - name: Test
         env:
           VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
