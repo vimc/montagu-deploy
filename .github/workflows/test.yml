@@ -34,6 +34,20 @@ jobs:
       - name: Lint
         run: |
           hatch run lint:style
+      - name: Pull images
+        run: |
+          docker pull vimc/montagu-api:master
+          docker pull vimc/montagu-db:master
+          docker pull vimc/montagu-admin-portal:master
+          docker pull vimc/montagu-cli:master
+          docker pull vimc/montagu-contrib-portal:master
+          docker pull vimc/montagu-reverse-proxy:vimc-7152
+          docker pull redis
+          docker pull mher/flower:0.9.5
+          docker pull vimc/task-queue-worker:master
+          docker pull nginx/nginx-prometheus-exporter:0.10.0
+          docker pull vimc/montagu-migrate:master
+          docker pull reachfive/fake-smtp-server:latest
       - name: Test
         env:
           VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
