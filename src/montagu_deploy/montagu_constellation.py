@@ -75,7 +75,7 @@ def flower_container(cfg):
     name = cfg.containers["flower"]
     mq = cfg.containers["mq"]
     env = {
-        "CELERY_BROKEN_URL": f"redis://{mq}//",
+        "CELERY_BROKER_URL": f"redis://{mq}//",
         "CELERY_RESULT_BACKEND": f"redis://{mq}/0",
         "FLOWER_PORT": cfg.flower_port,
     }
