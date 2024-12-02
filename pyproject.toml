@@ -49,7 +49,8 @@ dependencies = [
   "pytest",
   "redis",
   "vault_dev",
-  "YTClient"
+  "YTClient",
+  "cryptography"
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args:tests}"

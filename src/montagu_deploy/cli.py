@@ -4,6 +4,7 @@
   montagu status <path>
   montagu stop <path> [--volumes] [--network] [--kill] [--force]
     [--extra=PATH] [--option=OPTION]...
+  montagu renew-certificate <path> [--force-renewal] [--option=OPTION]...
 
 Options:
   --extra=PATH     Path, relative to <path>, of yml file of additional
@@ -19,14 +20,17 @@ Options:
                    signal their running configuration, or if config cannot be
                    parsed. Use with extra and/or option to force stop with
                    configuration options.
+  --force-renewal  Renew the certificate, even if the current one isn't close to
+                   expiry.
 """
 
 import docopt
 import yaml
 
 import montagu_deploy.__about__ as about
+from montagu_deploy.certbot import obtain_certificate
 from montagu_deploy.config import MontaguConfig
-from montagu_deploy.montagu_constellation import montagu_constellation
+from montagu_deploy.montagu_constellation import montagu_constellation, proxy_update_certificate
 
 
 def main(argv=None):
@@ -42,6 +46,8 @@ def main(argv=None):
             montagu_status(obj)
         elif args.action == "stop":
             montagu_stop(obj, args, cfg)
+        elif args.action == "renew-certificate":
+            montagu_renew_certificate(obj, cfg, force_renewal=args.force_renewal)
         return True
 
 
@@ -59,6 +65,18 @@ def montagu_start(obj, args):
 
 def montagu_status(obj):
     obj.status()
+
+
+def montagu_renew_certificate(obj, cfg, *, force_renewal=False):
+    if cfg.ssl_mode != "acme":
+        msg = "Proxy is not configured to use automatic certificates"
+        raise Exception(msg)
+
+    print("Renewing certificates")
+    (cert, key) = obtain_certificate(cfg, force_renewal=force_renewal)
+
+    container = obj.containers.get("proxy", cfg.container_prefix)
+    proxy_update_certificate(container, cert, key, reload=True)
 
 
 def montagu_stop(obj, args, cfg):
@@ -123,9 +141,12 @@ class MontaguArgs:
             self.action = "status"
         elif args["stop"]:
             self.action = "stop"
+        elif args["renew-certificate"]:
+            self.action = "renew-certificate"
 
         self.pull = args["--pull"]
         self.kill = args["--kill"]
         self.volumes = args["--volumes"]
         self.network = args["--network"]
         self.version = args["--version"]
+        self.force_renewal = args["--force-renewal"]

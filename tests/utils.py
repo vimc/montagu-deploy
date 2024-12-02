@@ -1,11 +1,16 @@
+import json
 import ssl
 import time
 import urllib
+from contextlib import contextmanager
+
+import docker
+from constellation import docker_util
 
 
 # Because we wait for a go signal to come up, we might not be able to
 # make the request right away:
-def http_get(url, retries=5, poll=0.5):
+def http_get(url, retries=10, poll=0.5):
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
@@ -18,3 +23,44 @@ def http_get(url, retries=5, poll=0.5):
             time.sleep(poll)
             error = e
     raise error
+
+
+# Create a container, as a context manager.
+# This container will be stopped and removed when the context manager exits.
+@contextmanager
+def create_container(image, **kwargs):
+    container = docker.from_env().containers.create(image, detach=True, **kwargs)
+    try:
+        yield container
+    finally:
+        container.stop()
+        container.remove()
+
+
+# Run the Pebble ACME server.
+@contextmanager
+def run_pebble(network):
+    env = {
+        "PEBBLE_WFE_NONCEREJECT": 0,
+        "PEBBLE_VA_NOSLEEP": 1,
+    }
+    config = {
+        "pebble": {
+            "listenAddress": "0.0.0.0:443",
+            # These are baked into the docker image already
+            "certificate": "test/certs/localhost/cert.pem",
+            "privateKey": "test/certs/localhost/key.pem",
+            # This is the port pebble connects to to fetch well-known challenges
+            "httpPort": 80,
+        }
+    }
+
+    with create_container(
+        "ghcr.io/letsencrypt/pebble:latest", command=["-config", "/config.json"], environment=env, network=network
+    ) as container:
+        docker_util.string_into_container(json.dumps(config), container, "/config.json")
+        container.start()
+        container.reload()
+
+        url = f"https://{container.attrs["NetworkSettings"]["Networks"][network]["IPAddress"]}/dir"
+        yield url

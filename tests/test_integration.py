@@ -1,26 +1,31 @@
 import os
+import ssl
+import time
+from cryptography.hazmat.primitives import hashes
 from unittest import mock
 
 import celery
 import docker
 import orderly_web
+import pytest
 import requests
 import vault_dev
 from constellation import docker_util
+from cryptography import x509
 from YTClient.YTClient import YTClient
 from YTClient.YTDataClasses import Command
 
 from src.montagu_deploy import cli
 from src.montagu_deploy.config import MontaguConfig
 from tests import admin
-from tests.utils import http_get
+from tests.utils import http_get, run_pebble
 
 
 def test_start_stop_status():
     path = "config/basic"
     try:
         # Start
-        res = cli.main(["start", path, "--pull"])
+        res = cli.main(["start", path])
         assert res
 
         cl = docker.client.from_env()
@@ -106,3 +111,66 @@ def add_task_queue_user(cfg, orderly_config_path):
     orderly_web.admin.grant(
         orderly_config_path, "montagu-task@imperial.ac.uk", ["*/reports.run", "*/reports.review", "*/reports.read"]
     )
+
+
+def test_acme_certificate():
+    path = "config/acme"
+    network = "montagu-network"
+
+    try:
+        docker_util.ensure_network(network)
+        with run_pebble(network=network) as url:
+            options = [
+                f"--option=proxy.acme.server={url}",
+                "--option=proxy.acme.no_verify_ssl=true",
+                "--option=hostname=proxy",
+            ]
+
+            res = cli.main(["start", path, *options])
+            assert res
+
+            # wait for nginx to be ready
+            http_get("https://localhost")
+
+            # Initially the server starts with a self-signed certificate.
+            # This allows it to start even before we get our first cert.
+            cert_pem = ssl.get_server_certificate(("localhost", 443))
+            cert = x509.load_pem_x509_certificate(cert_pem.encode("ascii"))
+            assert cert.issuer == cert.subject
+            self_signed_fingerprint = cert.fingerprint(hashes.SHA256())
+
+            # Renew the certificate using ACME. Confirm that it worked by
+            # looking at the issuer's CN. It can take some time for nginx to
+            # reload, so loop until the certificate has changed.
+            res = cli.main(["renew-certificate", path, *options])
+            assert res
+
+            for _ in range(5):
+                cert_pem = ssl.get_server_certificate(("localhost", 443))
+                cert = x509.load_pem_x509_certificate(cert_pem.encode("ascii"))
+                time.sleep(0.5)
+                if cert.fingerprint(hashes.SHA256()) != self_signed_fingerprint:
+                    break
+            else:
+                pytest.fail("Certificate was not reloaded")
+
+            acme_fingerprint = cert.fingerprint(hashes.SHA256())
+            assert "CN=Pebble Intermediate CA" in cert.issuer.rfc4514_string()
+
+            # When restarting the server, the certificate we got from ACME is
+            # carried over and is immediately available, no need to issue it
+            # again.
+            res = cli.main(["stop", path, "--kill"])
+            assert res
+            res = cli.main(["start", path, *options])
+            assert res
+
+            cert_pem = ssl.get_server_certificate(("localhost", 443))
+            cert = x509.load_pem_x509_certificate(cert_pem.encode("ascii"))
+            assert "CN=Pebble Intermediate CA" in cert.issuer.rfc4514_string()
+            assert cert.fingerprint(hashes.SHA256()) == acme_fingerprint
+
+    finally:
+        with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
+            prompt.return_value = True
+            cli.main(["stop", path, "--kill", "--volumes", "--network"])
