@@ -89,7 +89,7 @@ proxy:
   metrics:
     repo: nginx
     name: nginx-prometheus-exporter
-    tag: 0.10.0
+    tag: 1.3.0
 contrib:
   name: montagu-contrib-portal
   tag: master

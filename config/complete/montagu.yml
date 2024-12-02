@@ -82,7 +82,7 @@ proxy:
   metrics:
     repo: nginx
     name: nginx-prometheus-exporter
-    tag: 0.4.1
+    tag: 1.3.0
   ## This section describes how to get the certificate in.  We
   ## support two sources:
   ##
