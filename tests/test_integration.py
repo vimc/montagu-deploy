@@ -55,15 +55,20 @@ def test_task_queue():
     cfg = MontaguConfig(path)
     try:
         youtrack_token = os.environ["YOUTRACK_TOKEN"]
-        os.environ["VAULT_AUTH_GITHUB_TOKEN"] = os.environ["VAULT_TOKEN"]
-        with vault_dev.server() as s:
+        with vault_dev.Server(export_token=True) as s:
             cl = s.client()
-            enable_github_login(cl)
             cl.write("secret/youtrack/token", value=youtrack_token)
             vault_addr = f"http://localhost:{s.port}"
 
             orderly_web.start(orderly_config_path)
-            cli.main(["start", path, f"--option=vault.addr={vault_addr}"])
+            cli.main(
+                [
+                    "start",
+                    path,
+                    f"--option=vault.addr={vault_addr}",
+                    f"--option=vault.auth.args.token={s.token}",
+                ]
+            )
 
             # wait for API to be ready
             http_get("https://localhost/api/v1")
@@ -101,21 +106,3 @@ def add_task_queue_user(cfg, orderly_config_path):
     orderly_web.admin.grant(
         orderly_config_path, "montagu-task@imperial.ac.uk", ["*/reports.run", "*/reports.review", "*/reports.read"]
     )
-
-
-def enable_github_login(cl, path="github"):
-    cl.sys.enable_auth_method(method_type="github", path=path)
-    policy = """
-           path "secret/*" {
-             capabilities = ["read", "list"]
-           }
-           """
-
-    cl.sys.create_or_update_policy(
-        name="secret-reader",
-        policy=policy,
-    )
-
-    cl.auth.github.map_team(team_name="robots", policies=["secret-reader"], mount_point=path)
-
-    cl.auth.github.configure(organization="vimc", mount_point=path)

@@ -12,7 +12,7 @@ vault:
     ## a list, which is currently
     ##
     ##     azure, github, gcp, kubernetes, ldap, mfa, okta
-    method: github
+    method: token
 
 ## Prefix for container names; we'll use {container_prefix}-(container_name)
 container_prefix: montagu
