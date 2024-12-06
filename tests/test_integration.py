@@ -1,7 +1,6 @@
 import os
 import ssl
 import time
-from cryptography.hazmat.primitives import hashes
 from unittest import mock
 
 import celery
@@ -12,6 +11,7 @@ import requests
 import vault_dev
 from constellation import docker_util
 from cryptography import x509
+from cryptography.hazmat.primitives import hashes
 from YTClient.YTClient import YTClient
 from YTClient.YTDataClasses import Command
 
