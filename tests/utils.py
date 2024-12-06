@@ -62,5 +62,5 @@ def run_pebble(network):
         container.start()
         container.reload()
 
-        url = f"https://{container.attrs["NetworkSettings"]["Networks"][network]["IPAddress"]}/dir"
+        url = f"https://{container.attrs['NetworkSettings']['Networks'][network]['IPAddress']}/dir"
         yield url
