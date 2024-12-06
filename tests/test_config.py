@@ -38,7 +38,7 @@ def test_config_basic():
     assert str(cfg.images["mq"]) == "docker.io/redis:latest"
     assert str(cfg.images["flower"]) == "mher/flower:0.9.5"
     assert str(cfg.images["task_queue"]) == "vimc/task-queue-worker:master"
-    assert str(cfg.images["metrics"]) == "nginx/nginx-prometheus-exporter:0.10.0"
+    assert str(cfg.images["metrics"]) == "nginx/nginx-prometheus-exporter:1.3.0"
     assert str(cfg.images["db_migrate"]) == "vimc/montagu-migrate:master"
     assert str(cfg.images["fake_smtp"]) == "reachfive/fake-smtp-server:latest"
 

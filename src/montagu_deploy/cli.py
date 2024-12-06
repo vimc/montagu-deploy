@@ -26,7 +26,7 @@ import yaml
 
 import montagu_deploy.__about__ as about
 from montagu_deploy.config import MontaguConfig
-from montagu_deploy.montagu_constellation import MontaguConstellation
+from montagu_deploy.montagu_constellation import montagu_constellation
 
 
 def main(argv=None):
@@ -35,7 +35,7 @@ def main(argv=None):
         return about.__version__
     else:
         cfg = MontaguConfig(path, extra, options)
-        obj = MontaguConstellation(cfg)
+        obj = montagu_constellation(cfg)
         if args.action == "start":
             montagu_start(obj, args)
         elif args.action == "status":
