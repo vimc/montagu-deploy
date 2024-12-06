@@ -49,12 +49,13 @@ jobs:
           docker pull vimc/montagu-db:master
           docker pull vimc/montagu-migrate:master
           docker pull vimc/montagu-reverse-proxy:master
-          docker pull vimc/montagu-reverse-proxy:vimc-7152
+          docker pull vimc/montagu-reverse-proxy:VIMC-7464-letsencrypt
           docker pull vimc/orderly-web-user-cli:master
           docker pull vimc/orderly-web:master
           docker pull vimc/orderly.server:master
           docker pull vimc/orderlyweb-migrate:master
           docker pull vimc/task-queue-worker:master
+          docker pull ghcr.io/letsencrypt/pebble:latest
       - name: Test
         env:
           VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}

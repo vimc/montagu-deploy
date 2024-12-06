@@ -24,13 +24,13 @@ volumes:
   templates: template_volume
   guidance: guidance_volume
   mq: mq
+  acme-challenge: acme-challenge
+  certificates: certificates
+  certbot: certbot
 
 api:
   name: montagu-api
   tag: master
-  email:
-    password: "changeme"
-    flow_url: "fakeurl"
   admin:
     name: montagu-cli
     tag: master
@@ -38,7 +38,6 @@ db:
   name: montagu-db
   tag: master
   root_user: vimc
-  root_password: "changeme"
   migrate:
     name: montagu-migrate
     tag: master
@@ -55,12 +54,6 @@ db:
     readonly:
       password: "readonlypassword"
       permissions: readonly
-    barman:
-      password: "barmanpassword"
-      option: superuser
-    streaming_barman:
-      password: "streamingpassword"
-      option: replication
   protected_tables:
     - gavi_support_level
     - activity_type
@@ -76,24 +69,15 @@ db:
     - role_permission
 proxy:
   name: montagu-reverse-proxy
-  tag: master
+  tag: VIMC-7464-letsencrypt
   port_http: 80
   port_https: 443
   metrics:
     repo: nginx
     name: nginx-prometheus-exporter
     tag: 1.3.0
-  ## This section describes how to get the certificate in.  We
-  ## support two sources:
-  ##
-  ## 1. self signed certificates - just leave this section blank
-  ##
-  ## 2. certificates from strings - include the strings directly in
-  ##    the keys here, or more likely use a VAULT:<path>:<key>
-  ##    string to extract them from the vault.
-  ssl:
-    key: "k3y"
-    certificate: "cert"
+  acme:
+    email: admin@montagu.org
 contrib:
   name: montagu-contrib-portal
   tag: master
@@ -113,27 +97,27 @@ flower:
 task_queue:
   name: task-queue-worker
   tag: master
-  youtrack_token: "faketoken"
-  servers:
-    montagu:
-      user: test.user@example.com
-      password: password
-    orderlyweb:
-      url: http://orderly-web-web:8888
-    youtrack:
-      token: faketoken
-    smtp:
-      host: smtp.cc.ic.ac.uk
-      port: 587
-      user: montagu
-      password: p@ssword
-      from: montagu-notifications@imperial.ac.uk
   tasks:
     diagnostic_reports:
-      use_additional_recipients: true
+      use_additional_recipients: false
       poll_seconds: 5
-      reports:
     archive_folder_contents:
       min_file_age_seconds: 3600
+  servers:
+    youtrack:
+      token: faketoken
+    orderlyweb:
+      url: http://orderly-web-web:8888
+    montagu:
+      user: montagu-task@imperial.ac.uk
+      password: password
+    smtp:
+      from: montagu-notifications@imperial.ac.uk
+# If fake_smtp_server config is provided, the task_queue will use this as its smtp server
+# Note this will override other config provided in the task_queue section above
+fake_smtp_server:
+  repo: reachfive
+  name: fake-smtp-server
+  tag: latest
 
 orderly_web_api_url: https://localhost/reports/api/v2
