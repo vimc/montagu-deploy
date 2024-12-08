@@ -84,7 +84,7 @@ def test_config_ssl():
 def test_config_acme():
     cfg = MontaguConfig("config/acme")
     assert cfg.ssl_mode == "acme"
-    assert cfg.acme_email == "admin@montagu.com"
+    assert cfg.acme_email == "admin@montagu.org"
     assert cfg.acme_server is None
 
 
