@@ -1,0 +1,9 @@
+testGroup:
+  testDisease:
+    - report_name: diagnostic
+      assignee: a.hill
+      success_email:
+        recipients:
+          - minimal_modeller@example.com
+          - science@example.com
+        subject: "VIMC diagnostic report: {touchstone} - {group} - {disease}"

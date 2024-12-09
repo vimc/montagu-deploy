@@ -94,7 +94,6 @@ proxy:
   ssl:
     key: "k3y"
     certificate: "cert"
-    dhparam: "param"
 contrib:
   name: montagu-contrib-portal
   tag: master

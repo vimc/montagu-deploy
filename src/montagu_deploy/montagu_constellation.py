@@ -209,27 +209,47 @@ def inject_api_config(container, cfg):
 def proxy_container(cfg):
     name = cfg.containers["proxy"]
     proxy_ports = [cfg.proxy_port_http, cfg.proxy_port_https]
+
+    mounts = []
+
+    if cfg.ssl_mode == "acme":
+        mounts.extend(
+            [
+                constellation.ConstellationMount(
+                    "acme-challenge", "/var/www/.well-known/acme-challenge", read_only=True
+                ),
+                constellation.ConstellationMount("certificates", "/etc/montagu/proxy"),
+            ]
+        )
+
     return constellation.ConstellationContainer(
         name,
         cfg.proxy_ref,
         ports=proxy_ports,
         args=[str(cfg.proxy_port_https), cfg.hostname],
-        configure=proxy_configure,
+        preconfigure=proxy_preconfigure,
+        mounts=mounts,
     )
 
 
-def proxy_configure(container, cfg):
-    print("[proxy] Configuring reverse proxy")
+def proxy_update_certificate(container, cert, key, *, reload):
+    print("[proxy] Copying ssl certificate and key into proxy")
     ssl_path = "/etc/montagu/proxy"
-    if cfg.proxy_ssl_self_signed:
-        print("[proxy] Generating self-signed certificates for proxy")
-        docker_util.exec_safely(container, ["self-signed-certificate", ssl_path])
-    else:
-        print("[proxy] Copying ssl certificate and key into proxy")
-        docker_util.exec_safely(container, f"mkdir -p {ssl_path}")
-        docker_util.string_into_container(cfg.ssl_certificate, container, join(ssl_path, "certificate.pem"))
-        docker_util.string_into_container(cfg.ssl_key, container, join(ssl_path, "ssl_key.pem"))
-        docker_util.string_into_container(cfg.dhparam, container, join(ssl_path, "dhparam.pem"))
+    docker_util.string_into_container(cert, container, join(ssl_path, "certificate.pem"))
+    docker_util.string_into_container(key, container, join(ssl_path, "ssl_key.pem"))
+
+    if reload:
+        print("[proxy] Reloading nginx")
+        docker_util.exec_safely(container, "nginx -s reload")
+
+
+def proxy_preconfigure(container, cfg):
+    # In self-signed mode, the container generates its own certificate on its
+    # own. Similarly, in ACME mode, the container generates its own certificate
+    # and after starting we request a new one.
+    if cfg.ssl_mode == "static":
+        print("[proxy] Configuring reverse proxy")
+        proxy_update_certificate(container, cfg.ssl_certificate, cfg.ssl_key, reload=False)
 
 
 def proxy_metrics_container(cfg):

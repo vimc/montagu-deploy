@@ -14,7 +14,7 @@ repo: vimc
 network: montagu-network
 
 # Domain where this instance of Montagu will be deployed. E.g. science.montagu.dide.ic.uk
-hostname: localhost
+hostname: montagu.org
 
 ## Names of the docker volumes to use
 volumes:
@@ -24,6 +24,9 @@ volumes:
   templates: template_volume
   guidance: guidance_volume
   mq: mq
+  acme-challenge: acme-challenge
+  certificates: certificates
+  certbot: certbot
 
 api:
   name: montagu-api
@@ -73,6 +76,10 @@ proxy:
     repo: nginx
     name: nginx-prometheus-exporter
     tag: 1.3.0
+  acme:
+    email: admin@montagu.org
+    additional_domains:
+      - montagu-dev.org
 contrib:
   name: montagu-contrib-portal
   tag: master
