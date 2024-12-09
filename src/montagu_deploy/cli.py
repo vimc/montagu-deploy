@@ -4,7 +4,7 @@
   montagu status <path>
   montagu stop <path> [--volumes] [--network] [--kill] [--force]
     [--extra=PATH] [--option=OPTION]...
-  montagu renew-certificate <path> [--force-renewal] [--option=OPTION]...
+  montagu renew-certificate <path> [--force-renewal] [--expand] [--option=OPTION]...
 
 Options:
   --extra=PATH     Path, relative to <path>, of yml file of additional
@@ -22,6 +22,9 @@ Options:
                    configuration options.
   --force-renewal  Renew the certificate, even if the current one isn't close to
                    expiry.
+  --expand         If an existing certificate is a strict subset of the
+                   requested names, always expand and replace it with the
+                   additional names.
 """
 
 import docopt
@@ -47,7 +50,9 @@ def main(argv=None):
         elif args.action == "stop":
             montagu_stop(obj, args, cfg)
         elif args.action == "renew-certificate":
-            montagu_renew_certificate(obj, cfg, force_renewal=args.force_renewal)
+            montagu_renew_certificate(obj, cfg,
+                                      force_renewal=args.force_renewal,
+                                      expand=args.expand)
         return True
 
 
@@ -67,13 +72,13 @@ def montagu_status(obj):
     obj.status()
 
 
-def montagu_renew_certificate(obj, cfg, *, force_renewal=False):
+def montagu_renew_certificate(obj, cfg, **kwargs):
     if cfg.ssl_mode != "acme":
         msg = "Proxy is not configured to use automatic certificates"
         raise Exception(msg)
 
     print("Renewing certificates")
-    (cert, key) = obtain_certificate(cfg, force_renewal=force_renewal)
+    (cert, key) = obtain_certificate(cfg, **kwargs)
 
     container = obj.containers.get("proxy", cfg.container_prefix)
     proxy_update_certificate(container, cert, key, reload=True)
@@ -150,3 +155,4 @@ class MontaguArgs:
         self.network = args["--network"]
         self.version = args["--version"]
         self.force_renewal = args["--force-renewal"]
+        self.expand = args["--expand"]
