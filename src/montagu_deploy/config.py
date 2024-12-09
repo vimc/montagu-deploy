@@ -67,6 +67,7 @@ class MontaguConfig:
             self.acme_email = config.config_string(dat, ["proxy", "acme", "email"])
             self.acme_server = config.config_string(dat, ["proxy", "acme", "server"], is_optional=True)
             self.acme_no_verify_ssl = config.config_boolean(dat, ["proxy", "acme", "no_verify_ssl"], is_optional=True)
+            self.acme_additional_domains = config.config_list(dat, ["proxy", "acme", "additional_domains"], is_optional=True, default=[])
         else:
             self.ssl_mode = "self-signed"
 

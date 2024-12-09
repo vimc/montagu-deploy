@@ -39,7 +39,7 @@ def create_container(image, **kwargs):
 
 # Run the Pebble ACME server.
 @contextmanager
-def run_pebble(network):
+def run_pebble(**kwargs):
     env = {
         "PEBBLE_WFE_NONCEREJECT": 0,
         "PEBBLE_VA_NOSLEEP": 1,
@@ -56,11 +56,10 @@ def run_pebble(network):
     }
 
     with create_container(
-        "ghcr.io/letsencrypt/pebble:latest", command=["-config", "/config.json"], environment=env, network=network
+        "ghcr.io/letsencrypt/pebble:latest", command=["-config", "/config.json"],
+        environment=env,
+        **kwargs
     ) as container:
         docker_util.string_into_container(json.dumps(config), container, "/config.json")
         container.start()
-        container.reload()
-
-        url = f"https://{container.attrs['NetworkSettings']['Networks'][network]['IPAddress']}/dir"
-        yield url
+        yield

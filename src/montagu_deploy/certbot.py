@@ -42,6 +42,10 @@ def obtain_certificate(cfg, *, force_renewal=False):
         f"--email={cfg.acme_email}",
         f"--domain={cfg.hostname}",
     ]
+
+    for d in cfg.acme_additional_domains:
+        command.append(f"--domain={d}")
+
     environment = {}
 
     if force_renewal:

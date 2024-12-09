@@ -12,6 +12,7 @@ import vault_dev
 from constellation import docker_util
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
+from cryptography.x509.oid import ExtensionOID
 from YTClient.YTClient import YTClient
 from YTClient.YTDataClasses import Command
 
@@ -118,20 +119,28 @@ def test_acme_certificate():
     network = "montagu-network"
 
     try:
-        docker_util.ensure_network(network)
-        with run_pebble(network=network) as url:
-            options = [
-                f"--option=proxy.acme.server={url}",
-                "--option=proxy.acme.no_verify_ssl=true",
-                "--option=hostname=proxy",
-            ]
+        options = [
+            f"--option=proxy.acme.server=https://pebble/dir",
+            "--option=proxy.acme.no_verify_ssl=true",
+        ]
 
-            res = cli.main(["start", path, *options])
-            assert res
+        res = cli.main(["start", path, *options])
+        assert res
 
-            # wait for nginx to be ready
-            http_get("https://localhost")
+        # wait for nginx to be ready
+        http_get("https://localhost")
 
+        # We need Pebble to be able to resolve the proxy at the names used in the certificate.
+        # We set this up by adding a custom /etc/hosts in the pebble container pointing to the
+        # right IP address.
+        container = docker.from_env().containers.get("montagu-proxy")
+        ip = container.attrs['NetworkSettings']['Networks'][network]['IPAddress']
+        hostnames = {
+            "montagu.org": ip,
+            "montagu-dev.org": ip,
+        }
+
+        with run_pebble(hostname="pebble", network=network, extra_hosts=hostnames):
             # Initially the server starts with a self-signed certificate.
             # This allows it to start even before we get our first cert.
             cert_pem = ssl.get_server_certificate(("localhost", 443))
@@ -156,6 +165,11 @@ def test_acme_certificate():
 
             acme_fingerprint = cert.fingerprint(hashes.SHA256())
             assert "CN=Pebble Intermediate CA" in cert.issuer.rfc4514_string()
+            san = cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+            assert set(san.value.get_values_for_type(x509.DNSName)) == {
+                'montagu.org',
+                'montagu-dev.org',
+            }
 
             # When restarting the server, the certificate we got from ACME is
             # carried over and is immediately available, no need to issue it
