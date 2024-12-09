@@ -56,9 +56,7 @@ def run_pebble(**kwargs):
     }
 
     with create_container(
-        "ghcr.io/letsencrypt/pebble:latest", command=["-config", "/config.json"],
-        environment=env,
-        **kwargs
+        "ghcr.io/letsencrypt/pebble:latest", command=["-config", "/config.json"], environment=env, **kwargs
     ) as container:
         docker_util.string_into_container(json.dumps(config), container, "/config.json")
         container.start()

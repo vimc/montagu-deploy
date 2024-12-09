@@ -50,9 +50,7 @@ def main(argv=None):
         elif args.action == "stop":
             montagu_stop(obj, args, cfg)
         elif args.action == "renew-certificate":
-            montagu_renew_certificate(obj, cfg,
-                                      force_renewal=args.force_renewal,
-                                      expand=args.expand)
+            montagu_renew_certificate(obj, cfg, force_renewal=args.force_renewal, expand=args.expand)
         return True
 
 

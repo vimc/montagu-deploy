@@ -120,7 +120,7 @@ def test_acme_certificate():
 
     try:
         options = [
-            f"--option=proxy.acme.server=https://pebble/dir",
+            "--option=proxy.acme.server=https://pebble/dir",
             "--option=proxy.acme.no_verify_ssl=true",
         ]
 
@@ -134,7 +134,7 @@ def test_acme_certificate():
         # We set this up by adding a custom /etc/hosts in the pebble container pointing to the
         # right IP address.
         container = docker.from_env().containers.get("montagu-proxy")
-        ip = container.attrs['NetworkSettings']['Networks'][network]['IPAddress']
+        ip = container.attrs["NetworkSettings"]["Networks"][network]["IPAddress"]
         hostnames = {
             "montagu.org": ip,
             "montagu-dev.org": ip,
@@ -167,8 +167,8 @@ def test_acme_certificate():
             assert "CN=Pebble Intermediate CA" in cert.issuer.rfc4514_string()
             san = cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
             assert set(san.value.get_values_for_type(x509.DNSName)) == {
-                'montagu.org',
-                'montagu-dev.org',
+                "montagu.org",
+                "montagu-dev.org",
             }
 
             # When restarting the server, the certificate we got from ACME is
