@@ -69,7 +69,7 @@ db:
     - role_permission
 proxy:
   name: montagu-reverse-proxy
-  tag: VIMC-7464-letsencrypt
+  tag: master
   port_http: 80
   port_https: 443
   metrics:

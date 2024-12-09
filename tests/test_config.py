@@ -34,7 +34,7 @@ def test_config_basic():
     assert str(cfg.images["admin"]) == "vimc/montagu-admin-portal:master"
     assert str(cfg.images["api_admin"]) == "vimc/montagu-cli:master"
     assert str(cfg.images["contrib"]) == "vimc/montagu-contrib-portal:master"
-    assert str(cfg.images["proxy"]) == "vimc/montagu-reverse-proxy:VIMC-7464-letsencrypt"
+    assert str(cfg.images["proxy"]) == "vimc/montagu-reverse-proxy:master"
     assert str(cfg.images["mq"]) == "docker.io/redis:latest"
     assert str(cfg.images["flower"]) == "mher/flower:0.9.5"
     assert str(cfg.images["task_queue"]) == "vimc/task-queue-worker:master"
