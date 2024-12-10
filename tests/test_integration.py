@@ -26,8 +26,7 @@ def test_start_stop_status():
     path = "config/basic"
     try:
         # Start
-        res = cli.main(["start", path])
-        assert res
+        cli.main(["start", path])
 
         cl = docker.client.from_env()
         containers = cl.containers.list()
@@ -38,8 +37,7 @@ def test_start_stop_status():
         assert docker_util.volume_exists(cfg.volumes["db"])
 
         # Status
-        res = cli.main(["status", "config/basic"])
-        assert res
+        cli.main(["status", "config/basic"])
 
         # Stop
         with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
@@ -124,8 +122,7 @@ def test_acme_certificate():
             "--option=proxy.acme.no_verify_ssl=true",
         ]
 
-        res = cli.main(["start", path, *options])
-        assert res
+        cli.main(["start", path, *options])
 
         # wait for nginx to be ready
         http_get("https://localhost")
@@ -151,8 +148,7 @@ def test_acme_certificate():
             # Renew the certificate using ACME. Confirm that it worked by
             # looking at the issuer's CN. It can take some time for nginx to
             # reload, so loop until the certificate has changed.
-            res = cli.main(["renew-certificate", path, *options])
-            assert res
+            cli.main(["renew-certificate", path, *options])
 
             for _ in range(5):
                 cert_pem = ssl.get_server_certificate(("localhost", 443))
@@ -174,10 +170,8 @@ def test_acme_certificate():
             # When restarting the server, the certificate we got from ACME is
             # carried over and is immediately available, no need to issue it
             # again.
-            res = cli.main(["stop", path, "--kill"])
-            assert res
-            res = cli.main(["start", path, *options])
-            assert res
+            cli.main(["stop", path, "--kill"])
+            cli.main(["start", path, *options])
 
             cert_pem = ssl.get_server_certificate(("localhost", 443))
             cert = x509.load_pem_x509_certificate(cert_pem.encode("ascii"))

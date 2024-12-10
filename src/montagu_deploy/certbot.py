@@ -29,7 +29,7 @@ def read_file(container, path, *, follow_links=False):
                 return tar.extractfile(os.path.basename(path)).read()
 
 
-def obtain_certificate(cfg, *, force_renewal=False, expand=False):
+def obtain_certificate(cfg, extra_args):
     docker_util.ensure_volume(cfg.volumes["certbot"])
     docker_util.ensure_volume(cfg.volumes["acme-challenge"])
 
@@ -47,15 +47,13 @@ def obtain_certificate(cfg, *, force_renewal=False, expand=False):
     for d in cfg.acme_additional_domains:
         command.append(f"--domain={d}")
 
-    if force_renewal:
-        command.append("--force-renewal")
-    if expand:
-        command.append("--expand")
     if cfg.acme_server:
         command.append(f"--server={cfg.acme_server}"),
     if cfg.acme_no_verify_ssl:
         command.append("--no-verify-ssl")
         environment["PYTHONWARNINGS"] = "ignore:Unverified HTTPS request"
+
+    command.extend(extra_args)
 
     image = "certbot/certbot"
     container = docker.from_env().containers.run(
