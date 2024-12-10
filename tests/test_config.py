@@ -34,7 +34,7 @@ def test_config_basic():
     assert str(cfg.images["admin"]) == "vimc/montagu-admin-portal:master"
     assert str(cfg.images["api_admin"]) == "vimc/montagu-cli:master"
     assert str(cfg.images["contrib"]) == "vimc/montagu-contrib-portal:master"
-    assert str(cfg.images["proxy"]) == "vimc/montagu-reverse-proxy:vimc-7152"
+    assert str(cfg.images["proxy"]) == "vimc/montagu-reverse-proxy:master"
     assert str(cfg.images["mq"]) == "docker.io/redis:latest"
     assert str(cfg.images["flower"]) == "mher/flower:0.9.5"
     assert str(cfg.images["task_queue"]) == "vimc/task-queue-worker:master"
@@ -46,7 +46,7 @@ def test_config_basic():
     assert cfg.flower_port == 5555
 
     assert cfg.protect_data is False
-    assert cfg.proxy_ssl_self_signed is True
+    assert cfg.ssl_mode == "self-signed"
 
     assert cfg.db_root_user == "vimc"
     assert len(cfg.db_root_password) == 50
@@ -76,10 +76,16 @@ def test_config_email():
 
 def test_config_ssl():
     cfg = MontaguConfig("config/complete")
-    assert cfg.proxy_ssl_self_signed is False
+    assert cfg.ssl_mode == "static"
     assert cfg.ssl_certificate == "cert"
     assert cfg.ssl_key == "k3y"
-    assert cfg.dhparam == "param"
+
+
+def test_config_acme():
+    cfg = MontaguConfig("config/acme")
+    assert cfg.ssl_mode == "acme"
+    assert cfg.acme_email == "admin@montagu.org"
+    assert cfg.acme_server is None
 
 
 def test_config_generates_root_db_password():

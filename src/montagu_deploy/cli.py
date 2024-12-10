@@ -4,6 +4,7 @@
   montagu status <path>
   montagu stop <path> [--volumes] [--network] [--kill] [--force]
     [--extra=PATH] [--option=OPTION]...
+  montagu renew-certificate <path> [--option=OPTION]... [--] [ARGS...]
 
 Options:
   --extra=PATH     Path, relative to <path>, of yml file of additional
@@ -15,24 +16,21 @@ Options:
   --volumes        Remove volumes (WARNING: irreversible data loss)
   --network        Remove network
   --kill           Kill the containers (faster, but possible db corruption)
-  --force          Force stop even if containers are corrupted and cannot
-                   signal their running configuration, or if config cannot be
-                   parsed. Use with extra and/or option to force stop with
-                   configuration options.
 """
 
 import docopt
 import yaml
 
 import montagu_deploy.__about__ as about
+from montagu_deploy.certbot import obtain_certificate
 from montagu_deploy.config import MontaguConfig
-from montagu_deploy.montagu_constellation import montagu_constellation
+from montagu_deploy.montagu_constellation import montagu_constellation, proxy_update_certificate
 
 
 def main(argv=None):
     path, extra, options, args = parse_args(argv)
     if args.version:
-        return about.__version__
+        print(about.__version__)
     else:
         cfg = MontaguConfig(path, extra, options)
         obj = montagu_constellation(cfg)
@@ -42,7 +40,8 @@ def main(argv=None):
             montagu_status(obj)
         elif args.action == "stop":
             montagu_stop(obj, args, cfg)
-        return True
+        elif args.action == "renew-certificate":
+            montagu_renew_certificate(obj, cfg, args.extra_args)
 
 
 def parse_args(argv=None):
@@ -59,6 +58,18 @@ def montagu_start(obj, args):
 
 def montagu_status(obj):
     obj.status()
+
+
+def montagu_renew_certificate(obj, cfg, extra_args):
+    if cfg.ssl_mode != "acme":
+        msg = "Proxy is not configured to use automatic certificates"
+        raise Exception(msg)
+
+    print("Renewing certificates")
+    (cert, key) = obtain_certificate(cfg, extra_args)
+
+    container = obj.containers.get("proxy", cfg.container_prefix)
+    proxy_update_certificate(container, cert, key, reload=True)
 
 
 def montagu_stop(obj, args, cfg):
@@ -123,9 +134,12 @@ class MontaguArgs:
             self.action = "status"
         elif args["stop"]:
             self.action = "stop"
+        elif args["renew-certificate"]:
+            self.action = "renew-certificate"
 
         self.pull = args["--pull"]
         self.kill = args["--kill"]
         self.volumes = args["--volumes"]
         self.network = args["--network"]
         self.version = args["--version"]
+        self.extra_args = args["ARGS"]
