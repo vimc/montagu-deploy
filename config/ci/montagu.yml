@@ -83,7 +83,7 @@ db:
     - role_permission
 proxy:
   name: montagu-reverse-proxy
-  tag: vimc-7152
+  tag: master
   port_http: 80
   port_https: 443
   metrics:

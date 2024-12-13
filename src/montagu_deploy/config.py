@@ -13,14 +13,7 @@ class MontaguConfig:
         self.vault = config.config_vault(dat, ["vault"])
         self.network = config.config_string(dat, ["network"])
         self.protect_data = config.config_boolean(dat, ["protect_data"])
-        self.volumes = {
-            "db": config.config_string(dat, ["volumes", "db"]),
-            "emails": config.config_string(dat, ["volumes", "emails"]),
-            "burden_estimates": config.config_string(dat, ["volumes", "burden_estimates"]),
-            "templates": config.config_string(dat, ["volumes", "templates"]),
-            "guidance": config.config_string(dat, ["volumes", "guidance"]),
-            "mq": config.config_string(dat, ["volumes", "mq"]),
-        }
+        self.volumes = config.config_dict(dat, ["volumes"])
 
         self.container_prefix = config.config_string(dat, ["container_prefix"])
         self.repo = config.config_string(dat, ["repo"])
@@ -58,14 +51,27 @@ class MontaguConfig:
 
         # Proxy
         self.proxy_ref = self.build_ref(dat, "proxy")
-        self.proxy_ssl_self_signed = "ssl" not in dat["proxy"]
-        if not self.proxy_ssl_self_signed:
-            self.ssl_certificate = config.config_string(dat, ["proxy", "ssl", "certificate"])
-            self.ssl_key = config.config_string(dat, ["proxy", "ssl", "key"])
-            self.dhparam = config.config_string(dat, ["proxy", "ssl", "dhparam"])
         self.proxy_port_http = config.config_integer(dat, ["proxy", "port_http"])
         self.proxy_port_https = config.config_integer(dat, ["proxy", "port_https"])
         self.proxy_metrics_ref = self.build_ref(dat["proxy"], "metrics")
+
+        if "ssl" in dat["proxy"] and "acme" in dat["proxy"]:
+            msg = "Cannot specify both ssl and acme options in proxy options."
+            raise Exception(msg)
+        if "ssl" in dat["proxy"]:
+            self.ssl_mode = "static"
+            self.ssl_certificate = config.config_string(dat, ["proxy", "ssl", "certificate"])
+            self.ssl_key = config.config_string(dat, ["proxy", "ssl", "key"])
+        elif "acme" in dat["proxy"]:
+            self.ssl_mode = "acme"
+            self.acme_email = config.config_string(dat, ["proxy", "acme", "email"])
+            self.acme_server = config.config_string(dat, ["proxy", "acme", "server"], is_optional=True)
+            self.acme_no_verify_ssl = config.config_boolean(dat, ["proxy", "acme", "no_verify_ssl"], is_optional=True)
+            self.acme_additional_domains = config.config_list(
+                dat, ["proxy", "acme", "additional_domains"], is_optional=True, default=[]
+            )
+        else:
+            self.ssl_mode = "self-signed"
 
         # Portals
         self.admin_ref = self.build_ref(dat, "admin")

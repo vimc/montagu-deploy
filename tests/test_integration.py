@@ -1,27 +1,32 @@
 import os
+import ssl
+import time
 from unittest import mock
 
 import celery
 import docker
 import orderly_web
+import pytest
 import requests
 import vault_dev
 from constellation import docker_util
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes
+from cryptography.x509.oid import ExtensionOID
 from YTClient.YTClient import YTClient
 from YTClient.YTDataClasses import Command
 
 from src.montagu_deploy import cli
 from src.montagu_deploy.config import MontaguConfig
 from tests import admin
-from tests.utils import http_get
+from tests.utils import http_get, run_pebble
 
 
 def test_start_stop_status():
     path = "config/basic"
     try:
         # Start
-        res = cli.main(["start", path, "--pull"])
-        assert res
+        cli.main(["start", path])
 
         cl = docker.client.from_env()
         containers = cl.containers.list()
@@ -32,8 +37,7 @@ def test_start_stop_status():
         assert docker_util.volume_exists(cfg.volumes["db"])
 
         # Status
-        res = cli.main(["status", "config/basic"])
-        assert res
+        cli.main(["status", "config/basic"])
 
         # Stop
         with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
@@ -106,3 +110,75 @@ def add_task_queue_user(cfg, orderly_config_path):
     orderly_web.admin.grant(
         orderly_config_path, "montagu-task@imperial.ac.uk", ["*/reports.run", "*/reports.review", "*/reports.read"]
     )
+
+
+def test_acme_certificate():
+    path = "config/acme"
+    network = "montagu-network"
+
+    try:
+        options = [
+            "--option=proxy.acme.server=https://pebble/dir",
+            "--option=proxy.acme.no_verify_ssl=true",
+        ]
+
+        cli.main(["start", path, *options])
+
+        # wait for nginx to be ready
+        http_get("https://localhost")
+
+        # We need Pebble to be able to resolve the proxy at the names used in the certificate.
+        # We set this up by adding a custom /etc/hosts in the pebble container pointing to the
+        # right IP address.
+        container = docker.from_env().containers.get("montagu-proxy")
+        ip = container.attrs["NetworkSettings"]["Networks"][network]["IPAddress"]
+        hostnames = {
+            "montagu.org": ip,
+            "montagu-dev.org": ip,
+        }
+
+        with run_pebble(hostname="pebble", network=network, extra_hosts=hostnames):
+            # Initially the server starts with a self-signed certificate.
+            # This allows it to start even before we get our first cert.
+            cert_pem = ssl.get_server_certificate(("localhost", 443))
+            cert = x509.load_pem_x509_certificate(cert_pem.encode("ascii"))
+            assert cert.issuer == cert.subject
+            self_signed_fingerprint = cert.fingerprint(hashes.SHA256())
+
+            # Renew the certificate using ACME. Confirm that it worked by
+            # looking at the issuer's CN. It can take some time for nginx to
+            # reload, so loop until the certificate has changed.
+            cli.main(["renew-certificate", path, *options])
+
+            for _ in range(5):
+                cert_pem = ssl.get_server_certificate(("localhost", 443))
+                cert = x509.load_pem_x509_certificate(cert_pem.encode("ascii"))
+                time.sleep(0.5)
+                if cert.fingerprint(hashes.SHA256()) != self_signed_fingerprint:
+                    break
+            else:
+                pytest.fail("Certificate was not reloaded")
+
+            acme_fingerprint = cert.fingerprint(hashes.SHA256())
+            assert "CN=Pebble Intermediate CA" in cert.issuer.rfc4514_string()
+            san = cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+            assert set(san.value.get_values_for_type(x509.DNSName)) == {
+                "montagu.org",
+                "montagu-dev.org",
+            }
+
+            # When restarting the server, the certificate we got from ACME is
+            # carried over and is immediately available, no need to issue it
+            # again.
+            cli.main(["stop", path, "--kill"])
+            cli.main(["start", path, *options])
+
+            cert_pem = ssl.get_server_certificate(("localhost", 443))
+            cert = x509.load_pem_x509_certificate(cert_pem.encode("ascii"))
+            assert "CN=Pebble Intermediate CA" in cert.issuer.rfc4514_string()
+            assert cert.fingerprint(hashes.SHA256()) == acme_fingerprint
+
+    finally:
+        with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
+            prompt.return_value = True
+            cli.main(["stop", path, "--kill", "--volumes", "--network"])
