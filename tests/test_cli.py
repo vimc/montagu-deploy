@@ -1,6 +1,7 @@
 import io
+import os
 import re
-from contextlib import redirect_stdout
+from contextlib import contextmanager, redirect_stdout
 from unittest import mock
 
 import pytest
@@ -8,6 +9,18 @@ import pytest
 from src.montagu_deploy import cli
 from src.montagu_deploy.cli import prompt_yes_no, verify_data_loss
 from src.montagu_deploy.config import MontaguConfig
+
+
+@contextmanager
+def transient_working_directory(path):
+    origin = os.getcwd()
+    try:
+        if path is not None:
+            os.chdir(path)
+        yield
+    finally:
+        if path is not None:
+            os.chdir(origin)
 
 
 def test_parse_args():
@@ -81,6 +94,14 @@ def test_args_passed_to_stop():
     assert f.call_args[0][1].kill is False
     assert f.call_args[0][1].network is True
     assert f.call_args[0][1].volumes is True
+
+
+def test_args_passed_to_configure():
+    with mock.patch("src.montagu_deploy.cli.montagu_configure") as f:
+        cli.main(["configure", "config/basic"])
+
+    assert f.call_count == 0
+    assert f.mock_calls[0] == mock.call("config/basic")
 
 
 def test_can_parse_extra_certbot_args():
@@ -158,3 +179,26 @@ def test_bad_option_format():
 def test_invalid_option_type():
     with pytest.raises(Exception, match="Invalid value"):
         cli.parse_args(["start", "config/basic", "--option=one={2}"])
+
+
+def test_can_read_identity(tmp_path):
+    with transient_working_directory(tmp_path):
+        assert cli._read_identity(required=False) is None
+        assert cli._read_identity("foo") == "foo"
+        with pytest.raises(Exception, match="not yet configured"):
+            cli._read_identity()
+        with open(".montagu_identity", "w") as f:
+            f.write("foo\n")
+        assert cli._read_identity() == "foo"
+
+
+def test_can_configure_montagu(tmp_path, mocker):
+    with transient_working_directory(tmp_path):
+        mocker.patch("src.montagu_deploy.cli.MontaguConfig")
+        cli.montagu_configure("foo")
+        assert cli._read_identity() == "foo"
+        cli.montagu_configure("foo")
+        assert cli._read_identity() == "foo"
+        with pytest.raises(Exception, match="already configured as 'foo'"):
+            cli.montagu_configure("bar")
+        assert cli._read_identity() == "foo"

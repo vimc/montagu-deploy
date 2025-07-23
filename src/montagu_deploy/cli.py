@@ -1,10 +1,11 @@
 """Usage:
   montagu --version
-  montagu start <path> [--extra=PATH] [--option=OPTION]... [--pull]
-  montagu status <path>
-  montagu stop <path> [--volumes] [--network] [--kill] [--force]
+  montagu configure <path>
+  montagu start [<path>] [--extra=PATH] [--option=OPTION]... [--pull]
+  montagu status [<path>]
+  montagu stop [<path>] [--volumes] [--network] [--kill] [--force]
     [--extra=PATH] [--option=OPTION]...
-  montagu renew-certificate <path> [--option=OPTION]... [--] [ARGS...]
+  montagu renew-certificate [<path>] [--option=OPTION]... [--] [ARGS...]
 
 Options:
   --extra=PATH     Path, relative to <path>, of yml file of additional
@@ -17,6 +18,8 @@ Options:
   --network        Remove network
   --kill           Kill the containers (faster, but possible db corruption)
 """
+
+from pathlib import Path
 
 import docopt
 import yaml
@@ -32,6 +35,11 @@ def main(argv=None):
     if args.version:
         print(about.__version__)
     else:
+        if args.action == "configure":
+            montagu_configure(path)
+            return
+
+        path = _read_identity(path)
         cfg = MontaguConfig(path, extra, options)
         obj = montagu_constellation(cfg)
         if args.action == "start":
@@ -50,6 +58,27 @@ def parse_args(argv=None):
     extra = opts["--extra"]
     options = parse_option(opts)
     return path, extra, options, MontaguArgs(opts)
+
+
+def montagu_configure(name):
+    prev = _read_identity(required=False)
+    if prev:
+        if prev != name:
+            msg = (
+                f"This montagu instance is already configured as '{prev}', "
+                f"but you are trying to reconfigure it as '{name}'. "
+                "If you really want to do do this, then delete the file "
+                "'{IDENTITY_FILE}' from this directory and try again"
+            )
+            raise Exception(msg)
+        else:
+            print(f"Montagu already configured as '{name}")
+    else:
+        # Check that we can read the configuration before saving it.
+        MontaguConfig(name)
+        with IDENTITY_FILE.open("w") as f:
+            f.write(name)
+        print(f"Configured montagu as '{name}")
 
 
 def montagu_start(obj, args):
@@ -143,3 +172,18 @@ class MontaguArgs:
         self.network = args["--network"]
         self.version = args["--version"]
         self.extra_args = args["ARGS"]
+
+
+IDENTITY_FILE = Path(".montagu_identity")
+
+
+def _read_identity(name=None, *, required=True):
+    if name:
+        return name
+    if IDENTITY_FILE.exists():
+        with IDENTITY_FILE.open() as f:
+            return f.read().strip()
+    if required:
+        msg = "Montagu identity is not yet configured; run 'montagu configure <name>' first"
+        raise Exception(msg)
+    return None
