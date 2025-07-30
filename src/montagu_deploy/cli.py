@@ -165,6 +165,8 @@ class MontaguArgs:
             self.action = "stop"
         elif args["renew-certificate"]:
             self.action = "renew-certificate"
+        elif args["configure"]:
+            self.action = "configure"
 
         self.pull = args["--pull"]
         self.kill = args["--kill"]

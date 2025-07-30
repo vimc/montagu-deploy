@@ -100,7 +100,7 @@ def test_args_passed_to_configure():
     with mock.patch("src.montagu_deploy.cli.montagu_configure") as f:
         cli.main(["configure", "config/basic"])
 
-    assert f.call_count == 0
+    assert f.call_count == 1
     assert f.mock_calls[0] == mock.call("config/basic")
 
 
