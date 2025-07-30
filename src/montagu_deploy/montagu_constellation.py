@@ -39,8 +39,8 @@ def admin_container(cfg):
 def contrib_container(cfg):
     name = cfg.containers["contrib"]
     mounts = [
-        constellation.ConstellationMount("templates", "/usr/share/nginx/html/templates"),
-        constellation.ConstellationMount("guidance", "/usr/share/nginx/html/guidance"),
+        constellation.ConstellationVolumeMount("templates", "/usr/share/nginx/html/templates"),
+        constellation.ConstellationVolumeMount("guidance", "/usr/share/nginx/html/guidance"),
     ]
     return constellation.ConstellationContainer(name, cfg.contrib_ref, mounts=mounts)
 
@@ -48,7 +48,7 @@ def contrib_container(cfg):
 def mq_container(cfg):
     name = cfg.containers["mq"]
     mounts = [
-        constellation.ConstellationMount("mq", "/data"),
+        constellation.ConstellationVolumeMount("mq", "/data"),
     ]
     return constellation.ConstellationContainer(name, cfg.mq_ref, mounts=mounts, ports=[cfg.mq_port])
 
@@ -67,7 +67,7 @@ def flower_container(cfg):
 def task_queue_container(cfg):
     name = cfg.containers["task_queue"]
     mounts = [
-        constellation.ConstellationMount("burden_estimates", "/home/worker/burden_estimate_files"),
+        constellation.ConstellationVolumeMount("burden_estimates", "/home/worker/burden_estimate_files"),
     ]
     return constellation.ConstellationContainer(name, cfg.task_queue_ref, configure=task_queue_configure, mounts=mounts)
 
@@ -94,7 +94,7 @@ def fake_smtp_container(cfg):
 
 def db_container(cfg):
     name = cfg.containers["db"]
-    mounts = [constellation.ConstellationMount("db", "/pgdata")]
+    mounts = [constellation.ConstellationVolumeMount("db", "/pgdata")]
     return constellation.ConstellationContainer(name, cfg.db_ref, mounts=mounts, ports=[5432], configure=db_configure)
 
 
@@ -167,8 +167,8 @@ def db_enable_streaming_replication(container, cfg):
 def api_container(cfg):
     name = cfg.containers["api"]
     mounts = [
-        constellation.ConstellationMount("burden_estimates", "/upload_dir"),
-        constellation.ConstellationMount("emails", "/tmp/emails"),  # noqa S108
+        constellation.ConstellationVolumeMount("burden_estimates", "/upload_dir"),
+        constellation.ConstellationVolumeMount("emails", "/tmp/emails"),  # noqa S108
     ]
     return constellation.ConstellationContainer(name, cfg.api_ref, mounts=mounts, configure=api_configure)
 
@@ -215,10 +215,10 @@ def proxy_container(cfg):
     if cfg.ssl_mode == "acme":
         mounts.extend(
             [
-                constellation.ConstellationMount(
+                constellation.ConstellationVolumeMount(
                     "acme-challenge", "/var/www/.well-known/acme-challenge", read_only=True
                 ),
-                constellation.ConstellationMount("certificates", "/etc/montagu/proxy"),
+                constellation.ConstellationVolumeMount("certificates", "/etc/montagu/proxy"),
             ]
         )
 
