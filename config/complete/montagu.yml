@@ -118,8 +118,9 @@ task_queue:
     montagu:
       user: test.user@example.com
       password: password
-    orderlyweb:
-      url: http://orderly-web-web:8888
+    packit:
+      url: https://localhost/packit
+      disable_certificate_verify: true
     youtrack:
       token: faketoken
     smtp:
