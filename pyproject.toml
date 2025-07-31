@@ -47,6 +47,7 @@ dependencies = [
   "coverage[toml]>=6.5",
   "orderly_web",
   "pytest",
+  "pytest-mock",
   "redis",
   "vault_dev",
   "YTClient",
