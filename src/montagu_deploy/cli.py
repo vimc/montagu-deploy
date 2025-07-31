@@ -1,13 +1,14 @@
 """Usage:
   montagu --version
   montagu configure <path>
-  montagu start [<path>] [--extra=PATH] [--option=OPTION]... [--pull]
-  montagu status [<path>]
-  montagu stop [<path>] [--volumes] [--network] [--kill] [--force]
+  montagu start [--name=PATH] [--extra=PATH] [--option=OPTION]... [--pull]
+  montagu status [--name=PATH]
+  montagu stop [--name=PATH] [--volumes] [--network] [--kill] [--force]
     [--extra=PATH] [--option=OPTION]...
-  montagu renew-certificate [<path>] [--option=OPTION]... [--] [ARGS...]
+  montagu renew-certificate [--name=PATH] [--option=OPTION]... [--] [ARGS...]
 
 Options:
+  --name=PATH      Override the configured name, use with care!
   --extra=PATH     Path, relative to <path>, of yml file of additional
                    configuration
   --option=OPTION  Additional configuration options, in the form key=value
@@ -54,7 +55,7 @@ def main(argv=None):
 
 def parse_args(argv=None):
     opts = docopt.docopt(__doc__, argv)
-    path = opts["<path>"]
+    path = opts["<path>"] if opts["configure"] else opts["--name"]
     extra = opts["--extra"]
     options = parse_option(opts)
     return path, extra, options, MontaguArgs(opts)

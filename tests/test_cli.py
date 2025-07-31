@@ -24,7 +24,7 @@ def transient_working_directory(path):
 
 
 def test_parse_args():
-    res = cli.parse_args(["start", "config/basic", "--pull"])
+    res = cli.parse_args(["start", "--name=config/basic", "--pull"])
     assert res[0] == "config/basic"
     assert res[1] is None
     assert res[2] == []
@@ -35,13 +35,13 @@ def test_parse_args():
     assert args.volumes is False
     assert args.network is False
 
-    res = cli.parse_args(["start", "config/basic", "--extra=extra.yml"])
+    res = cli.parse_args(["start", "--name=config/basic", "--extra=extra.yml"])
     assert res[1] == "extra.yml"
 
-    res = cli.parse_args(["start", "config/basic", "--option=a=x", "--option=b.c=y"])
+    res = cli.parse_args(["start", "--name=config/basic", "--option=a=x", "--option=b.c=y"])
     assert res[2] == [{"a": "x"}, {"b": {"c": "y"}}]
 
-    res = cli.parse_args(["stop", "config/basic", "--kill", "--network", "--volumes"])
+    res = cli.parse_args(["stop", "--name=config/basic", "--kill", "--network", "--volumes"])
     args = res[3]
     assert args.action == "stop"
     assert args.pull is False
@@ -49,7 +49,7 @@ def test_parse_args():
     assert args.volumes is True
     assert args.network is True
 
-    res = cli.parse_args(["status", "config/basic"])
+    res = cli.parse_args(["status", "--name=config/basic"])
     args = res[3]
     assert args.action == "status"
 
@@ -66,13 +66,13 @@ def test_version(capsys):
 
 def test_args_passed_to_start():
     with mock.patch("src.montagu_deploy.cli.montagu_start") as f:
-        cli.main(["start", "config/basic"])
+        cli.main(["start", "--name=config/basic"])
 
     assert f.called
     assert f.call_args[0][1].pull is False
 
     with mock.patch("src.montagu_deploy.cli.montagu_start") as f:
-        cli.main(["start", "config/basic", "--pull"])
+        cli.main(["start", "--name=config/basic", "--pull"])
 
     assert f.called
     assert f.call_args[0][1].pull is True
@@ -80,7 +80,7 @@ def test_args_passed_to_start():
 
 def test_args_passed_to_stop():
     with mock.patch("src.montagu_deploy.cli.montagu_stop") as f:
-        cli.main(["stop", "config/basic"])
+        cli.main(["stop", "--name=config/basic"])
 
     assert f.called
     assert f.call_args[0][1].kill is False
@@ -88,7 +88,7 @@ def test_args_passed_to_stop():
     assert f.call_args[0][1].volumes is False
 
     with mock.patch("src.montagu_deploy.cli.montagu_stop") as f:
-        cli.main(["stop", "config/basic", "--volumes", "--network"])
+        cli.main(["stop", "--name=config/basic", "--volumes", "--network"])
 
     assert f.called
     assert f.call_args[0][1].kill is False
@@ -105,7 +105,7 @@ def test_args_passed_to_configure():
 
 
 def test_can_parse_extra_certbot_args():
-    res = cli.parse_args(["renew-certificate", "config/basic", "--", "--force-renewal"])
+    res = cli.parse_args(["renew-certificate", "--name=config/basic", "--", "--force-renewal"])
     assert res[0] == "config/basic"
     assert res[1] is None
     assert res[2] == []
@@ -119,7 +119,7 @@ def test_verify_data_loss_called():
     with redirect_stdout(f):
         with mock.patch("src.montagu_deploy.cli.verify_data_loss") as verify:
             verify.return_value = True
-            cli.main(["stop", "config/basic", "--volumes"])
+            cli.main(["stop", "--name=config/basic", "--volumes"])
 
     assert verify.called
 
@@ -129,7 +129,7 @@ def test_verify_data_loss_not_called():
     with redirect_stdout(f):
         with mock.patch("src.montagu_deploy.cli.verify_data_loss") as verify:
             verify.return_value = True
-            cli.main(["stop", "config/basic"])
+            cli.main(["stop", "--name=config/basic"])
 
     assert not verify.called
 
@@ -173,12 +173,12 @@ def test_prompt_is_quite_strict():
 
 def test_bad_option_format():
     with pytest.raises(Exception, match="Invalid option"):
-        cli.parse_args(["start", "config/basic", "--option=one:two"])
+        cli.parse_args(["start", "--name=config/basic", "--option=one:two"])
 
 
 def test_invalid_option_type():
     with pytest.raises(Exception, match="Invalid value"):
-        cli.parse_args(["start", "config/basic", "--option=one={2}"])
+        cli.parse_args(["start", "--name=config/basic", "--option=one={2}"])
 
 
 def test_can_read_identity(tmp_path):
