@@ -31,9 +31,9 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://github.com/unknown/montagu-deploy#readme"
-Issues = "https://github.com/unknown/montagu-deploy/issues"
-Source = "https://github.com/unknown/montagu-deploy"
+Documentation = "https://github.com/vimc/montagu-deploy#readme"
+Issues = "https://github.com/vimc/montagu-deploy/issues"
+Source = "https://github.com/vimc/montagu-deploy"
 
 [project.scripts]
 montagu = "montagu_deploy.cli:main"
@@ -172,8 +172,8 @@ omit = [
 ]
 
 [tool.coverage.paths]
-montagu_deploy = ["src/montagu_deploy", "*/montagu-deploy/src/montagu_deploy"]
-tests = ["tests", "*/montagu-deploy/tests"]
+montagu_deploy = ["src/montagu_deploy", "*/montagu_deploy/src/montagu_deploy"]
+tests = ["tests", "*/montagu_deploy/tests"]
 
 [tool.coverage.report]
 exclude_lines = [

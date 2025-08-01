@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/montagu
+      url: https://pypi.org/p/montagu-deploy
     permissions:
       # This permission is needed for the workflow to authenticate against PyPI
       id-token: write
