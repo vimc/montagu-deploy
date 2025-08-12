@@ -193,7 +193,7 @@ def inject_api_config(container, cfg):
         "db.password": cfg.db_users["api"]["password"],
         "allow.localhost": False,
         "celery.flower.host": cfg.containers["flower"],
-        "orderlyweb.api.url": cfg.orderly_web_api_url,
+        "packit.api.url": cfg.packit_api_url,
         "upload.dir": "/upload_dir",
     }
 

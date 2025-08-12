@@ -137,4 +137,4 @@ task_queue:
     archive_folder_contents:
       min_file_age_seconds: 3600
 
-orderly_web_api_url: https://localhost/reports/api/v2
+packit_api_url: https://localhost/packit/api

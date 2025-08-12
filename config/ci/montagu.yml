@@ -132,4 +132,4 @@ fake_smtp_server:
   name: fake-smtp-server
   tag: latest
 
-orderly_web_api_url: https://localhost/reports/api/v2
+packit_api_url: https://localhost/packit/api
