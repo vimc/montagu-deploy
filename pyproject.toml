@@ -45,7 +45,7 @@ path = "src/montagu_deploy/__about__.py"
 dependencies = [
   "celery",
   "coverage[toml]>=6.5",
-  "orderly_web",
+  "packit",
   "pytest",
   "pytest-mock",
   "redis",
