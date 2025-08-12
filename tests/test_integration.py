@@ -53,7 +53,6 @@ def test_start_stop_status():
             cli.main(["stop", "--name", path, "--kill", "--volumes", "--network"])
 
 
-@pytest.mark.skip(reason="broken until task queue work complete")
 def test_task_queue():
     orderly_config_path = "tests"
     path = "config/ci"
