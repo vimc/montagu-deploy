@@ -5,7 +5,7 @@ from unittest import mock
 
 import celery
 import docker
-import orderly_web
+import packit
 import pytest
 import requests
 import vault_dev
@@ -54,7 +54,7 @@ def test_start_stop_status():
 
 
 def test_task_queue():
-    orderly_config_path = "tests"
+    packit_config_path = "tests"
     path = "config/ci"
     cfg = MontaguConfig(path)
     try:
@@ -64,7 +64,7 @@ def test_task_queue():
             cl.write("secret/youtrack/token", value=youtrack_token)
             vault_addr = f"http://localhost:{s.port}"
 
-            orderly_web.start(orderly_config_path)
+            packit.start(packit_config_path)
             cli.main(
                 [
                     "start",
