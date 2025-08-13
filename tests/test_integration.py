@@ -103,12 +103,12 @@ def test_task_queue():
     finally:
         with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
             prompt.return_value = True
-            PackitConstellation(packit_config).start(kill=True)
+            PackitConstellation(packit_config).stop(kill=True)
             cli.main(["stop", "--name", path, "--kill", "--volumes", "--network"])
 
 
 def add_task_queue_user(cfg, packit):
-    packit_db_container = packit.obj.get("packit-db")
+    packit_db_container = packit.obj.containers.get("packit-db")
     docker_util.exec_safely(
         packit_db_container,
         [
