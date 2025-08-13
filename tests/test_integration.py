@@ -5,7 +5,6 @@ from unittest import mock
 
 import celery
 import docker
-import packit
 import pytest
 import requests
 import vault_dev
@@ -15,6 +14,8 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.x509.oid import ExtensionOID
 from YTClient.YTClient import YTClient
 from YTClient.YTDataClasses import Command
+from packit.packit_constellation import PackitConstellation
+from packit.config import PackitConfig
 
 from src.montagu_deploy import cli
 from src.montagu_deploy.config import MontaguConfig
@@ -57,6 +58,7 @@ def test_task_queue():
     packit_config_path = "tests"
     path = "config/ci"
     cfg = MontaguConfig(path)
+    packit_config = PackitConfig(packit_config_path)
     try:
         youtrack_token = os.environ["YOUTRACK_TOKEN"]
         with vault_dev.Server(export_token=True) as s:
@@ -64,7 +66,7 @@ def test_task_queue():
             cl.write("secret/youtrack/token", value=youtrack_token)
             vault_addr = f"http://localhost:{s.port}"
 
-            packit.start(packit_config_path)
+            PackitConstellation(packit_config).start(pull_images=True)
             cli.main(
                 [
                     "start",
@@ -78,7 +80,7 @@ def test_task_queue():
             # wait for API to be ready
             http_get("https://localhost/api/v1")
 
-            add_task_queue_user(cfg, orderly_config_path)
+            add_task_queue_user(cfg, packit_config_path)
             app = celery.Celery(broker="redis://localhost//", backend="redis://")
             sig = "run-diagnostic-reports"
             args = ["testGroup", "testDisease", "testTouchstone-1", "2020-11-04T12:21:15", "no_vaccination"]
@@ -100,7 +102,7 @@ def test_task_queue():
     finally:
         with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
             prompt.return_value = True
-            orderly_web.stop(orderly_config_path, kill=True)
+            PackitConstellation(packit_config).start(kill=True)
             cli.main(["stop", "--name", path, "--kill", "--volumes", "--network"])
 
 
