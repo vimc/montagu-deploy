@@ -91,11 +91,10 @@ def test_task_queue():
             # TODO: remove this debug
             # Get logs from task queue to see why this is failing
             client = docker.client.from_env()
-            tq = client.containers.get('montagu-task-queue')
-            logs: List[str] = tq.logs(stream=True)
+            tq = client.containers.get("montagu-task-queue")
+            logs = tq.logs(stream=True)
             for log in logs:
-                print(log.decode('utf-8'))
-
+                print(log.decode("utf-8"))
 
             assert len(versions) == 1
             # check expected notification email was sent to fake smtp server
