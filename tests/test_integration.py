@@ -1,5 +1,6 @@
 import os
 import ssl
+import subprocess
 import time
 from unittest import mock
 
@@ -7,7 +8,6 @@ import celery
 import docker
 import pytest
 import requests
-import subprocess
 import vault_dev
 from constellation import docker_util
 from cryptography import x509
@@ -22,6 +22,7 @@ from src.montagu_deploy import cli
 from src.montagu_deploy.config import MontaguConfig
 from tests import admin
 from tests.utils import http_get, run_pebble
+
 
 @pytest.mark.skip(reason="TODO: unskip")
 def test_start_stop_status():
@@ -113,7 +114,7 @@ def test_task_queue():
     finally:
         with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
             prompt.return_value = True
-            subprocess.run(["docker", "ps"])
+            subprocess.run(["docker", "ps"], check=False)
             PackitConstellation(packit_config).stop(kill=True)
             cli.main(["stop", "--name", path, "--kill", "--volumes", "--network"])
 
