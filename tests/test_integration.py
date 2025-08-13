@@ -12,10 +12,10 @@ from constellation import docker_util
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 from cryptography.x509.oid import ExtensionOID
+from packit.config import PackitConfig
+from packit.packit_constellation import PackitConstellation
 from YTClient.YTClient import YTClient
 from YTClient.YTDataClasses import Command
-from packit.packit_constellation import PackitConstellation
-from packit.config import PackitConfig
 
 from src.montagu_deploy import cli
 from src.montagu_deploy.config import MontaguConfig
@@ -66,7 +66,8 @@ def test_task_queue():
             cl.write("secret/youtrack/token", value=youtrack_token)
             vault_addr = f"http://localhost:{s.port}"
 
-            PackitConstellation(packit_config).start(pull_images=True)
+            packit = PackitConstellation(packit_config)
+            packit.start(pull_images=True)
             cli.main(
                 [
                     "start",
@@ -80,7 +81,7 @@ def test_task_queue():
             # wait for API to be ready
             http_get("https://localhost/api/v1")
 
-            add_task_queue_user(cfg, packit_config_path)
+            add_task_queue_user(cfg, packit)
             app = celery.Celery(broker="redis://localhost//", backend="redis://")
             sig = "run-diagnostic-reports"
             args = ["testGroup", "testDisease", "testTouchstone-1", "2020-11-04T12:21:15", "no_vaccination"]
@@ -106,13 +107,25 @@ def test_task_queue():
             cli.main(["stop", "--name", path, "--kill", "--volumes", "--network"])
 
 
-def add_task_queue_user(cfg, orderly_config_path):
+def add_task_queue_user(cfg, packit):
+    packit_db_container = packit.obj.get("packit-db")
+    docker_util.exec_safely(
+        packit_db_container,
+        [
+            "create-preauth-user",
+            "--username",
+            "task.queue",
+            "--email",
+            "montagu-task@imperial.ac.uk",
+            "--displayname",
+            "task.queue",
+            "--role",
+            "ADMIN",
+        ],
+    )
+
     admin.add_user(cfg, "task.queue", "task.queue", "montagu-task@imperial.ac.uk", "password")
     admin.add_role_to_user(cfg, "task.queue", "user")
-    orderly_web.admin.add_users(orderly_config_path, ["montagu-task@imperial.ac.uk"])
-    orderly_web.admin.grant(
-        orderly_config_path, "montagu-task@imperial.ac.uk", ["*/reports.run", "*/reports.review", "*/reports.read"]
-    )
 
 
 def test_acme_certificate():
