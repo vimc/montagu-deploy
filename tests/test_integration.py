@@ -114,8 +114,9 @@ def test_task_queue():
             subprocess.run(
                 ["docker", "exec", "montagu-proxy", "curl", "http://montagu-packit-api:8080/pins/packets"], check=False
             )
-            subprocess.run(["docker", "inspect", "montagu-proxy"], check=False)
-            subprocess.run(["docker", "inspect", "montagu-packit-api"], check=False)
+            # subprocess.run(["docker", "inspect", "montagu-proxy"], check=False)
+            # subprocess.run(["docker", "inspect", "montagu-packit-api"], check=False)
+            subprocess.run(["docker", "logs", "montagu-packit-api"], check=False)
             subprocess.run(["docker", "logs", "montagu-task-queue"], check=False)
             PackitConstellation(packit_config).stop(kill=True)
             cli.main(["stop", "--name", path, "--kill", "--volumes", "--network"])
