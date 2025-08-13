@@ -82,6 +82,7 @@ def test_task_queue():
 
             # wait for API to be ready
             http_get("https://localhost/api/v1")
+            time.sleep(60)
 
             add_task_queue_user(cfg, packit)
             app = celery.Celery(broker="redis://localhost//", backend="redis://")
