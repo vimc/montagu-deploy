@@ -3,7 +3,7 @@
 ## arrange a proxy on this network, or use dev_mode in the web section
 ## below.
 ## Prefix for container names; we'll use {container_prefix}-(container_name)
-container_prefix: packit
+container_prefix: montagu
 
 ## Set this flag to true to prevent use of --volumes in the cli to remove
 ## volumes on stop
