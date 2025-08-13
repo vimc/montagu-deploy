@@ -108,7 +108,9 @@ def test_task_queue():
             prompt.return_value = True
             # TODO: remove this
             subprocess.run(["docker", "ps"], check=False)
-            subprocess.run(["docker", "exec", "montagu-proxy", "curl", "http://packit-api/pins/packets"], check=False)
+            subprocess.run(
+                ["docker", "exec", "montagu-proxy", "curl", "http://packit-api:8080/pins/packets"], check=False
+            )
             subprocess.run(["docker", "logs", "montagu-task-queue"], check=False)
             PackitConstellation(packit_config).stop(kill=True)
             cli.main(["stop", "--name", path, "--kill", "--volumes", "--network"])
