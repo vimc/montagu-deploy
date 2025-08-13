@@ -12,8 +12,8 @@ from constellation import docker_util
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 from cryptography.x509.oid import ExtensionOID
-from packit.config import PackitConfig
-from packit.packit_constellation import PackitConstellation
+from packit_deploy.config import PackitConfig
+from packit_deploy.packit_constellation import PackitConstellation
 from YTClient.YTClient import YTClient
 from YTClient.YTDataClasses import Command
 
