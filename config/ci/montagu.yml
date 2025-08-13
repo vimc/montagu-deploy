@@ -118,7 +118,7 @@ task_queue:
   servers:
     ## To use value from the vault, use the format VAULT:<path>:<key>
     youtrack:
-      token: VAULT:secret/vimc-robot/youtrack-task-queue-token:value
+      token: VAULT:secret/youtrack/token:value
     packit:
       # TODO: update the the other configs
       url: https://proxy:443/packit
