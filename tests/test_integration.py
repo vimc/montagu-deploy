@@ -90,14 +90,6 @@ def test_task_queue():
             signature = app.signature(sig, args)
             versions = signature.delay().get()
 
-            # TODO: remove this debug
-            # Get logs from task queue to see why this is failing
-            # client = docker.client.from_env()
-            # tq = client.containers.get("montagu-task-queue")
-            # logs = tq.logs(stream=True)
-            # for log in logs:
-            #    print(log.decode("utf-8"))
-
             assert len(versions) == 1
             # check expected notification email was sent to fake smtp server
             emails = requests.get("http://localhost:1080/api/emails", timeout=5).json()
@@ -114,7 +106,8 @@ def test_task_queue():
     finally:
         with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
             prompt.return_value = True
-            subprocess.run(["docker", "ps"], check=False)
+            # TODO: remove this
+            subprocess.run(["docker", "logs", "montagu-task-queue"], check=False)
             PackitConstellation(packit_config).stop(kill=True)
             cli.main(["stop", "--name", path, "--kill", "--volumes", "--network"])
 
