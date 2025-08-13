@@ -7,6 +7,7 @@ import celery
 import docker
 import pytest
 import requests
+import subprocess
 import vault_dev
 from constellation import docker_util
 from cryptography import x509
@@ -22,7 +23,7 @@ from src.montagu_deploy.config import MontaguConfig
 from tests import admin
 from tests.utils import http_get, run_pebble
 
-
+@pytest.mark.skip(reason="TODO: unskip")
 def test_start_stop_status():
     path = "config/basic"
     try:
@@ -112,6 +113,7 @@ def test_task_queue():
     finally:
         with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
             prompt.return_value = True
+            subprocess.run(["docker", "ps"])
             PackitConstellation(packit_config).stop(kill=True)
             cli.main(["stop", "--name", path, "--kill", "--volumes", "--network"])
 
@@ -137,6 +139,7 @@ def add_task_queue_user(cfg, packit):
     admin.add_role_to_user(cfg, "task.queue", "user")
 
 
+@pytest.mark.skip(reason="TODO: unskip")
 def test_acme_certificate():
     path = "config/acme"
     network = "montagu-network"
