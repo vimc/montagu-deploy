@@ -118,9 +118,10 @@ task_queue:
   servers:
     ## To use value from the vault, use the format VAULT:<path>:<key>
     youtrack:
-      token: VAULT:secret/youtrack/token:value
+      token: VAULT:secret/vimc-robot/youtrack-task-queue-token:value
     packit:
-      url: https://localhost/packit
+      # TODO: update the the other configs
+      url: https://proxy:443/packit
       disable_certificate_verify: true
     montagu:
       user: montagu-task@imperial.ac.uk
