@@ -108,7 +108,7 @@ def test_task_queue():
 
 
 def add_task_queue_user(cfg, packit):
-    packit_db_container = packit.obj.containers.get("packit-db")
+    packit_db_container = packit.obj.containers.get("packit-db", "packit")
     docker_util.exec_safely(
         packit_db_container,
         [
