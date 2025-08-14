@@ -3,6 +3,7 @@ import ssl
 import subprocess
 import time
 from unittest import mock
+from urllib.error import HTTPError
 
 import celery
 import docker
@@ -80,10 +81,16 @@ def test_task_queue():
                 ]
             )
 
-            # wait for API to be ready
+            # wait for APIs to be ready
             http_get("https://localhost/api/v1")
-            http_get("https://localhost/packit/api/auth/config")
-            # time.sleep(60)
+            wait_count = 0
+            while wait_count < 60:
+                try:
+                    http_get("https://localhost/packit/api/auth/config")
+                    break
+                except HTTPError:
+                    time.sleep(1)
+                    wait_count += 1
 
             add_task_queue_user(cfg, packit)
             app = celery.Celery(broker="redis://localhost//", backend="redis://")
