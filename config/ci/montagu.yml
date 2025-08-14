@@ -120,7 +120,6 @@ task_queue:
     youtrack:
       token: VAULT:secret/youtrack/token:value
     packit:
-      # TODO: update the the other configs
       url: https://montagu-proxy:443/packit
       disable_certificate_verify: true
     montagu:
@@ -133,4 +132,4 @@ fake_smtp_server:
   name: fake-smtp-server
   tag: latest
 
-packit_api_url: https://localhost/packit/api
+packit_api_url: https://montagu-proxy:443/packit/api

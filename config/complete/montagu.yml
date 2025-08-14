@@ -119,7 +119,7 @@ task_queue:
       user: test.user@example.com
       password: password
     packit:
-      url: https://localhost/packit
+      url: https://montagu-proxy:443/packit
       disable_certificate_verify: true
     youtrack:
       token: faketoken
@@ -137,4 +137,4 @@ task_queue:
     archive_folder_contents:
       min_file_age_seconds: 3600
 
-packit_api_url: https://localhost/packit/api
+packit_api_url: https://montagu-proxy:443/packit/api
