@@ -113,8 +113,6 @@ def test_task_queue():
     finally:
         with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
             prompt.return_value = True
-            subprocess.run(["docker", "logs", "montagu-packit-api"], check=False)
-            subprocess.run(["docker", "logs", "montagu-task-queue"], check=False)
             PackitConstellation(packit_config).stop(kill=True)
             cli.main(["stop", "--name", path, "--kill", "--volumes", "--network"])
 
