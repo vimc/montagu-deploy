@@ -25,7 +25,6 @@ from tests import admin
 from tests.utils import http_get, run_pebble
 
 
-@pytest.mark.skip(reason="TODO: unskip")
 def test_start_stop_status():
     path = "config/basic"
     try:
@@ -152,7 +151,6 @@ def add_task_queue_user(cfg, packit):
     admin.add_role_to_user(cfg, "task.queue", "user")
 
 
-@pytest.mark.skip(reason="TODO: unskip")
 def test_acme_certificate():
     path = "config/acme"
     network = "montagu-network"
