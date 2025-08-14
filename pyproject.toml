@@ -142,9 +142,7 @@ ignore = [
   # Ignore complexity
   "C901", "PLR0911", "PLR0912", "PLR0913", "PLR0915",
   # Ignore print statements
-  "T201",
-  # TODO: remove
-  "S607"
+  "T201"
 ]
 unfixable = [
   # Don't touch unused imports

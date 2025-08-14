@@ -1,6 +1,5 @@
 import os
 import ssl
-import subprocess
 import time
 from unittest import mock
 from urllib.error import HTTPError
@@ -114,16 +113,6 @@ def test_task_queue():
     finally:
         with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
             prompt.return_value = True
-            # TODO: remove this
-            subprocess.run(["docker", "ps"], check=False)
-            subprocess.run(
-                ["docker", "exec", "montagu-proxy", "curl", "http://packit-api:8080/pins/packets"], check=False
-            )
-            subprocess.run(
-                ["docker", "exec", "montagu-proxy", "curl", "http://montagu-packit-api:8080/pins/packets"], check=False
-            )
-            # subprocess.run(["docker", "inspect", "montagu-proxy"], check=False)
-            # subprocess.run(["docker", "inspect", "montagu-packit-api"], check=False)
             subprocess.run(["docker", "logs", "montagu-packit-api"], check=False)
             subprocess.run(["docker", "logs", "montagu-task-queue"], check=False)
             PackitConstellation(packit_config).stop(kill=True)
