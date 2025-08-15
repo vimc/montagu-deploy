@@ -35,6 +35,9 @@ jobs:
       - name: Lint
         run: |
           hatch run lint:style
+      - name: Pull image required for full deploy (avoid --pull parameter)
+        run: |
+          docker pull ghcr.io/letsencrypt/pebble:latest
       - name: Test
         env:
           VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
