@@ -2,12 +2,12 @@ import os
 import ssl
 import time
 from unittest import mock
-from urllib.error import HTTPError
 
 import celery
 import docker
 import pytest
 import requests
+import tenacity
 import vault_dev
 from constellation import docker_util
 from cryptography import x509
@@ -81,14 +81,7 @@ def test_task_queue():
 
             # wait for APIs to be ready
             http_get("https://localhost/api/v1")
-            wait_count = 0
-            while wait_count < 60:
-                try:
-                    http_get("https://localhost/packit/api/auth/config")
-                    break
-                except HTTPError:
-                    time.sleep(1)
-                    wait_count += 1
+            wait_for_packit_api()
 
             add_task_queue_user(cfg, packit)
             app = celery.Celery(broker="redis://localhost//", backend="redis://")
@@ -115,6 +108,13 @@ def test_task_queue():
             prompt.return_value = True
             PackitConstellation(packit_config).stop(kill=True)
             cli.main(["stop", "--name", path, "--kill", "--volumes", "--network"])
+
+
+@tenacity.retry(wait=tenacity.wait_fixed(1), stop=tenacity.stop_after_attempt(60))
+def wait_for_packit_api():
+    print("Trying to connect to packit api..")
+    http_get("https://localhost/packit/api/auth/config")
+    print("Success!")
 
 
 def add_task_queue_user(cfg, packit):

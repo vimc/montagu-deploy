@@ -123,4 +123,4 @@ fake_smtp_server:
   name: fake-smtp-server
   tag: latest
 
-packit_api_url: https://montagu-proxy:443/packit/api
+packit_api_url: https://montagu-proxy/packit/api
