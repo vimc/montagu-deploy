@@ -1,0 +1,66 @@
+## The name of the docker network that containers will be attached to.
+## If you want to proxy Packit to the host, you will need to
+## arrange a proxy on this network, or use dev_mode in the web section
+## below.
+## Prefix for container names; we'll use {container_prefix}-(container_name)
+container_prefix: montagu
+
+## Set this flag to true to prevent use of --volumes in the cli to remove
+## volumes on stop
+protect_data: false
+
+## Docker org for images
+repo: ghcr.io/mrc-ide
+
+## The name of the docker network that containers will be attached to.
+## If you want to proxy Packit to the host, you will need to
+## arrange a proxy on this network
+network: montagu-network
+
+## Names of the docker volumes to use:
+##
+## outpack: stores the outpack metadata
+## proxy_logs: stores logs from the reverse proxy (only used if proxy is given)
+## (More volumes are anticipated as the tool develops)
+volumes:
+  outpack: outpack_volume
+  proxy_logs: packit_proxy_logs
+  packit_db: packit_db
+  orderly_library: orderly_library
+  orderly_logs: orderly_logs
+
+outpack:
+  server:
+    name: outpack_server
+    tag: main
+  migrate:
+    name: outpack.orderly
+    tag: main
+
+packit:
+  base_url: https://localhost
+  api:
+    name: packit-api
+    tag: main
+  app:
+    name: packit
+    tag: main
+  db:
+    name: packit-db
+    tag: main
+    user: packituser
+    password: changeme
+  auth:
+    enabled: true
+    auth_method: preauth
+    expiry_days: 1
+    jwt:
+      secret: "0b4g4f8z4mdsrhoxfde2mam8f00vmt0f"
+orderly-runner:
+  image:
+    name: orderly.runner
+    tag: main
+  git:
+    url: https://github.com/reside-ic/orderly2-example.git
+  workers: 1
+

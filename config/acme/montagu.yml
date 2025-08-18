@@ -108,8 +108,9 @@ task_queue:
   servers:
     youtrack:
       token: faketoken
-    orderlyweb:
-      url: http://orderly-web-web:8888
+    packit:
+      url: https://montagu-proxy:443/packit
+      disable_certificate_verify: true
     montagu:
       user: montagu-task@imperial.ac.uk
       password: password
@@ -122,4 +123,4 @@ fake_smtp_server:
   name: fake-smtp-server
   tag: latest
 
-orderly_web_api_url: https://localhost/reports/api/v2
+packit_api_url: https://montagu-proxy/packit/api

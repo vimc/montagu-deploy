@@ -5,14 +5,16 @@ from unittest import mock
 
 import celery
 import docker
-import orderly_web
 import pytest
 import requests
+import tenacity
 import vault_dev
 from constellation import docker_util
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 from cryptography.x509.oid import ExtensionOID
+from packit_deploy.config import PackitConfig
+from packit_deploy.packit_constellation import PackitConstellation
 from YTClient.YTClient import YTClient
 from YTClient.YTDataClasses import Command
 
@@ -53,11 +55,11 @@ def test_start_stop_status():
             cli.main(["stop", "--name", path, "--kill", "--volumes", "--network"])
 
 
-@pytest.mark.skip(reason="broken until task queue work complete")
 def test_task_queue():
-    orderly_config_path = "tests"
+    packit_config_path = "tests"
     path = "config/ci"
     cfg = MontaguConfig(path)
+    packit_config = PackitConfig(packit_config_path)
     try:
         youtrack_token = os.environ["YOUTRACK_TOKEN"]
         with vault_dev.Server(export_token=True) as s:
@@ -65,7 +67,8 @@ def test_task_queue():
             cl.write("secret/youtrack/token", value=youtrack_token)
             vault_addr = f"http://localhost:{s.port}"
 
-            orderly_web.start(orderly_config_path)
+            packit = PackitConstellation(packit_config)
+            packit.start(pull_images=True)
             cli.main(
                 [
                     "start",
@@ -76,15 +79,17 @@ def test_task_queue():
                 ]
             )
 
-            # wait for API to be ready
+            # wait for APIs to be ready
             http_get("https://localhost/api/v1")
+            wait_for_packit_api()
 
-            add_task_queue_user(cfg, orderly_config_path)
+            add_task_queue_user(cfg, packit)
             app = celery.Celery(broker="redis://localhost//", backend="redis://")
             sig = "run-diagnostic-reports"
             args = ["testGroup", "testDisease", "testTouchstone-1", "2020-11-04T12:21:15", "no_vaccination"]
             signature = app.signature(sig, args)
             versions = signature.delay().get()
+
             assert len(versions) == 1
             # check expected notification email was sent to fake smtp server
             emails = requests.get("http://localhost:1080/api/emails", timeout=5).json()
@@ -101,17 +106,36 @@ def test_task_queue():
     finally:
         with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
             prompt.return_value = True
-            orderly_web.stop(orderly_config_path, kill=True)
+            PackitConstellation(packit_config).stop(kill=True)
             cli.main(["stop", "--name", path, "--kill", "--volumes", "--network"])
 
 
-def add_task_queue_user(cfg, orderly_config_path):
+@tenacity.retry(wait=tenacity.wait_fixed(1), stop=tenacity.stop_after_attempt(60))
+def wait_for_packit_api():
+    print("Trying to connect to packit api..")
+    http_get("https://localhost/packit/api/auth/config")
+    print("Success!")
+
+
+def add_task_queue_user(cfg, packit):
+    packit_db_container = packit.obj.containers.get("packit-db", "montagu")
+    docker_util.exec_safely(
+        packit_db_container,
+        [
+            "create-preauth-user",
+            "--username",
+            "task.queue",
+            "--email",
+            "montagu-task@imperial.ac.uk",
+            "--displayname",
+            "task.queue",
+            "--role",
+            "ADMIN",
+        ],
+    )
+
     admin.add_user(cfg, "task.queue", "task.queue", "montagu-task@imperial.ac.uk", "password")
     admin.add_role_to_user(cfg, "task.queue", "user")
-    orderly_web.admin.add_users(orderly_config_path, ["montagu-task@imperial.ac.uk"])
-    orderly_web.admin.grant(
-        orderly_config_path, "montagu-task@imperial.ac.uk", ["*/reports.run", "*/reports.review", "*/reports.read"]
-    )
 
 
 def test_acme_certificate():

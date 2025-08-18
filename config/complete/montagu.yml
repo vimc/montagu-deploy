@@ -118,8 +118,9 @@ task_queue:
     montagu:
       user: test.user@example.com
       password: password
-    orderlyweb:
-      url: http://orderly-web-web:8888
+    packit:
+      url: https://montagu-proxy:443/packit
+      disable_certificate_verify: true
     youtrack:
       token: faketoken
     smtp:
@@ -136,4 +137,4 @@ task_queue:
     archive_folder_contents:
       min_file_age_seconds: 3600
 
-orderly_web_api_url: https://localhost/reports/api/v2
+packit_api_url: https://montagu-proxy/packit/api

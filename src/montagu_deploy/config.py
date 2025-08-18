@@ -18,7 +18,7 @@ class MontaguConfig:
         self.container_prefix = config.config_string(dat, ["container_prefix"])
         self.repo = config.config_string(dat, ["repo"])
         self.hostname = config.config_string(dat, ["hostname"])
-        self.orderly_web_api_url = config.config_string(dat, ["orderly_web_api_url"])
+        self.packit_api_url = config.config_string(dat, ["packit_api_url"])
 
         # API
         self.api_ref = self.build_ref(dat, "api")

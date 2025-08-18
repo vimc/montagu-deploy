@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.11", "3.12", "3.13"]
 
     steps:
       - name: Set up QEMU
@@ -35,25 +35,8 @@ jobs:
       - name: Lint
         run: |
           hatch run lint:style
-      - name: Pull images
+      - name: Pull image required for full deploy (avoid --pull parameter)
         run: |
-          docker pull mher/flower:0.9.5
-          docker pull nginx/nginx-prometheus-exporter:1.3.0
-          docker pull reachfive/fake-smtp-server:latest
-          docker pull redis
-          docker pull redis:5.0
-          docker pull vimc/montagu-admin-portal:master
-          docker pull vimc/montagu-api:master
-          docker pull vimc/montagu-cli:master
-          docker pull vimc/montagu-contrib-portal:master
-          docker pull vimc/montagu-db:master
-          docker pull vimc/montagu-migrate:master
-          docker pull vimc/montagu-reverse-proxy:master
-          docker pull vimc/orderly-web-user-cli:master
-          docker pull vimc/orderly-web:master
-          docker pull vimc/orderly.server:master
-          docker pull vimc/orderlyweb-migrate:master
-          docker pull vimc/task-queue-worker:master
           docker pull ghcr.io/letsencrypt/pebble:latest
       - name: Test
         env:
