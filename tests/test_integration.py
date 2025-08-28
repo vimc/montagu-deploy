@@ -119,6 +119,8 @@ def test_metrics_endpoints():
         packit.start(pull_images=True)
         cli.main(["start", "--name", path])
 
+        wait_for_packit_api()
+
         assert "jvm_info" in http_get("http://localhost:9000/metrics/packit-api")
         assert "http_requests_duration_seconds_bucket" in http_get("http://localhost:9000/metrics/outpack_server")
     finally:
