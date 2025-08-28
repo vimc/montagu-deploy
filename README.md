@@ -16,7 +16,8 @@ pip install montagu-deploy
 ## Usage
 
 ```
-$ montagu start <path>
+$ montagu configure <path>
+$ montagu start --pull
 ```
 
 Here `<path>` is the path to a directory that contains a configuration file `montagu.yml`.

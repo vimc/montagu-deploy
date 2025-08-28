@@ -110,6 +110,29 @@ def test_task_queue():
             cli.main(["stop", "--name", path, "--kill", "--volumes", "--network"])
 
 
+def test_metrics_endpoints():
+    packit_config_path = "tests"
+    path = "config/basic"
+    cfg = MontaguConfig(path)
+    packit_config = PackitConfig(packit_config_path)
+    try:
+        packit = PackitConstellation(packit_config)
+        packit.start(pull_images=True)
+        cli.main(["start", "--name", path])
+
+        # wait for all containers to be ready
+        http_get("https://localhost/api/v1")
+        wait_for_packit_api()
+
+        assert "jvm_info" in http_get("http://localhost:9000/metrics/packit-api")
+        assert "http_requests_duration_seconds_bucket" in http_get("http://localhost:9000/metrics/outpack_server")
+    finally:
+        with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
+            prompt.return_value = True
+            PackitConstellation(packit_config).stop(kill=True)
+            cli.main(["stop", "--name", path, "--kill", "--volumes", "--network"])
+
+
 @tenacity.retry(wait=tenacity.wait_fixed(1), stop=tenacity.stop_after_attempt(60))
 def wait_for_packit_api():
     print("Trying to connect to packit api..")
