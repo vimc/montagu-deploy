@@ -113,16 +113,11 @@ def test_task_queue():
 def test_metrics_endpoints():
     packit_config_path = "tests"
     path = "config/basic"
-    cfg = MontaguConfig(path)
     packit_config = PackitConfig(packit_config_path)
     try:
         packit = PackitConstellation(packit_config)
         packit.start(pull_images=True)
         cli.main(["start", "--name", path])
-
-        # wait for all containers to be ready
-        http_get("https://localhost/api/v1")
-        wait_for_packit_api()
 
         assert "jvm_info" in http_get("http://localhost:9000/metrics/packit-api")
         assert "http_requests_duration_seconds_bucket" in http_get("http://localhost:9000/metrics/outpack_server")
