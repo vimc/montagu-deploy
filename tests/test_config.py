@@ -59,6 +59,8 @@ def test_config_basic():
     assert len(cfg.db_protected_tables) == 12
     assert cfg.db_protected_tables[0] == "gavi_support_level"
 
+    assert cfg.proxy_port_metrics == 9000
+
 
 def test_config_email():
     cfg = MontaguConfig("config/basic")

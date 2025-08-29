@@ -53,6 +53,7 @@ class MontaguConfig:
         self.proxy_ref = self.build_ref(dat, "proxy")
         self.proxy_port_http = config.config_integer(dat, ["proxy", "port_http"])
         self.proxy_port_https = config.config_integer(dat, ["proxy", "port_https"])
+        self.proxy_port_metrics = config.config_integer(dat, ["proxy", "port_metrics"], is_optional=True, default=9000)
         self.proxy_metrics_ref = self.build_ref(dat["proxy"], "metrics")
 
         if "ssl" in dat["proxy"] and "acme" in dat["proxy"]:

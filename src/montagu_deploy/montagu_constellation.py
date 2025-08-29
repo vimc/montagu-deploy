@@ -208,7 +208,7 @@ def inject_api_config(container, cfg):
 
 def proxy_container(cfg):
     name = cfg.containers["proxy"]
-    proxy_ports = [cfg.proxy_port_http, cfg.proxy_port_https]
+    proxy_ports = [cfg.proxy_port_http, cfg.proxy_port_https, cfg.proxy_port_metrics]
 
     mounts = []
 
