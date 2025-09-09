@@ -50,13 +50,19 @@ hatch build
 1. `hatch build`
 2. `pip install dist/montagu_deploy-{version}.tar.gz`
 
-## Publish to PyPi
-
-```console
-hatch publish
-```
-
 ## License
 
 `montagu-deploy` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.
 
+## Publishing to PyPI
+
+Automatically publish to [PyPI](https://pypi.org/project/montagu-deploy).  Assuming a version number `0.1.2`:
+
+* Create a [release on github](https://github.com/vimc/montagu-deploy/releases/new)
+* Choose a tag -> Create a new tag: `v0.1.2`
+* Use this version as the description
+* Optionally describe the release
+* Click "Publish release"
+* This triggers the release workflow and the package will be available on PyPI in a few minutes
+
+Settings are configured [here on PyPI](https://pypi.org/manage/project/montagu-deploy/settings/publishing)
