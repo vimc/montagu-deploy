@@ -1,18 +1,12 @@
 import os
-import ssl
-import time
 from unittest import mock
 
 import celery
 import docker
-import pytest
 import requests
 import tenacity
 import vault_dev
 from constellation import docker_util
-from cryptography import x509
-from cryptography.hazmat.primitives import hashes
-from cryptography.x509.oid import ExtensionOID
 from packit_deploy.config import PackitConfig
 from packit_deploy.packit_constellation import PackitConstellation
 from YTClient.YTClient import YTClient
@@ -21,7 +15,7 @@ from YTClient.YTDataClasses import Command
 from src.montagu_deploy import cli
 from src.montagu_deploy.config import MontaguConfig
 from tests import admin
-from tests.utils import http_get, run_pebble
+from tests.utils import http_get
 
 
 def test_start_stop_status():
