@@ -63,7 +63,7 @@ class MontaguConfig:
             self.ssl_mode = "static"
             self.ssl_certificate = config.config_string(dat, ["proxy", "ssl", "certificate"])
             self.ssl_key = config.config_string(dat, ["proxy", "ssl", "key"])
-        elif "acme" in dat["proxy"]:
+        elif "acme_buddy" in dat:
             self.ssl_mode = "acme"
             self.acme_buddy_ref = self.build_ref(dat, "acme_buddy")
             self.acme_buddy_port = config.config_integer(dat, ["acme_buddy", "port"])

@@ -156,7 +156,6 @@ class MontaguArgs:
         self.volumes = args["--volumes"]
         self.network = args["--network"]
         self.version = args["--version"]
-        self.extra_args = args["ARGS"]
 
 
 IDENTITY_FILE = Path(".montagu_identity")

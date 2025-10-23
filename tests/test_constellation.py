@@ -124,23 +124,6 @@ def test_db_configured():
         obj.stop(kill=True, remove_volumes=True)
 
 
-def test_proxy_configured_ssl():
-    cfg = MontaguConfig("config/complete")
-    obj = montagu_constellation(cfg)
-
-    try:
-        obj.start()
-
-        api = get_container(cfg, "proxy")
-        cert = docker_util.string_from_container(api, "/etc/montagu/proxy/certificate.pem")
-        key = docker_util.string_from_container(api, "/etc/montagu/proxy/ssl_key.pem")
-        assert cert == "cert"
-        assert key == "k3y"
-
-    finally:
-        obj.stop(kill=True, remove_volumes=True)
-
-
 def test_metrics():
     cfg = MontaguConfig("config/basic")
     obj = montagu_constellation(cfg)

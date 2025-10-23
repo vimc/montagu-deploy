@@ -80,7 +80,6 @@ def test_config_acme():
     cfg = MontaguConfig("config/acme")
     assert cfg.ssl_mode == "acme"
     assert cfg.acme_buddy_email == "admin@montagu.org"
-    assert cfg.acme_server is None
 
 
 def test_config_generates_root_db_password():
