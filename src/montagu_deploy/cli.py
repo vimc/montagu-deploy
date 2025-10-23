@@ -5,7 +5,6 @@
   montagu status [--name=PATH]
   montagu stop [--name=PATH] [--volumes] [--network] [--kill] [--force]
     [--extra=PATH] [--option=OPTION]...
-  montagu renew-certificate [--name=PATH] [--option=OPTION]... [--] [ARGS...]
 
 Options:
   --name=PATH      Override the configured name, use with care!
@@ -26,9 +25,8 @@ import docopt
 import yaml
 
 import montagu_deploy.__about__ as about
-from montagu_deploy.certbot import obtain_certificate
 from montagu_deploy.config import MontaguConfig
-from montagu_deploy.montagu_constellation import montagu_constellation, proxy_update_certificate
+from montagu_deploy.montagu_constellation import montagu_constellation
 
 
 def main(argv=None):
@@ -49,8 +47,6 @@ def main(argv=None):
             montagu_status(obj)
         elif args.action == "stop":
             montagu_stop(obj, args, cfg)
-        elif args.action == "renew-certificate":
-            montagu_renew_certificate(obj, cfg, args.extra_args)
 
 
 def parse_args(argv=None):
@@ -88,18 +84,6 @@ def montagu_start(obj, args):
 
 def montagu_status(obj):
     obj.status()
-
-
-def montagu_renew_certificate(obj, cfg, extra_args):
-    if cfg.ssl_mode != "acme":
-        msg = "Proxy is not configured to use automatic certificates"
-        raise Exception(msg)
-
-    print("Renewing certificates")
-    (cert, key) = obtain_certificate(cfg, extra_args)
-
-    container = obj.containers.get("proxy", cfg.container_prefix)
-    proxy_update_certificate(container, cert, key, reload=True)
 
 
 def montagu_stop(obj, args, cfg):
@@ -164,8 +148,6 @@ class MontaguArgs:
             self.action = "status"
         elif args["stop"]:
             self.action = "stop"
-        elif args["renew-certificate"]:
-            self.action = "renew-certificate"
         elif args["configure"]:
             self.action = "configure"
 

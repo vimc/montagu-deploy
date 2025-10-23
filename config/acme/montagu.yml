@@ -24,9 +24,7 @@ volumes:
   templates: template_volume
   guidance: guidance_volume
   mq: mq
-  acme-challenge: acme-challenge
-  certificates: certificates
-  certbot: certbot
+  montagu-tls: montagu-tls
 
 api:
   name: montagu-api
@@ -76,10 +74,18 @@ proxy:
     repo: nginx
     name: nginx-prometheus-exporter
     tag: 1.3.0
-  acme:
-    email: admin@montagu.org
-    additional_domains:
-      - montagu-dev.org
+  
+acme_buddy:
+  email: admin@montagu.org
+  additional_domains:
+    - montagu-dev.org
+  repo: ghcr.io/reside-ic
+  name: acme-buddy
+  tag: main
+  hdb_username: VAULT:secret/certbot-hdb/credentials:username
+  hdb_password: VAULT:secret/certbot-hdb/credentials:password
+  port: 2112
+
 contrib:
   name: montagu-contrib-portal
   tag: master

@@ -1,3 +1,4 @@
+import os
 from os.path import join
 
 import constellation
@@ -10,17 +11,22 @@ from montagu_deploy import database
 
 
 def montagu_constellation(cfg):
+    proxy = proxy_container(cfg)
     containers = [
         api_container(cfg),
         db_container(cfg),
         admin_container(cfg),
         contrib_container(cfg),
-        proxy_container(cfg),
+        proxy,
         proxy_metrics_container(cfg),
         mq_container(cfg),
         flower_container(cfg),
         task_queue_container(cfg),
     ]
+
+    if cfg.ssl_mode == "acme":
+        acme_buddy = acme_buddy_container(cfg, proxy)
+        containers.append(acme_buddy)
 
     if cfg.fake_smtp_ref:
         fake_smtp = fake_smtp_container(cfg)
@@ -90,6 +96,49 @@ def task_queue_configure(container, cfg):
 def fake_smtp_container(cfg):
     name = cfg.containers["fake_smtp"]
     return constellation.ConstellationContainer(name, cfg.fake_smtp_ref, ports=[1025, 1080])
+
+
+def acme_buddy_container(cfg, proxy):
+    name = cfg.containers["acme-buddy"]
+    acme_buddy_staging = int(os.environ.get("ACME_BUDDY_STAGING", "0"))
+    acme_env = {
+        "ACME_BUDDY_STAGING": acme_buddy_staging,
+        "HDB_ACME_USERNAME": cfg.acme_buddy_hdb_username,
+        "HDB_ACME_PASSWORD": cfg.acme_buddy_hdb_password,
+    }
+    acme_mounts = [
+        constellation.ConstellationVolumeMount("montagu-tls", "/tls"),
+        constellation.ConstellationBindMount("/var/run/docker.sock", "/var/run/docker.sock"),
+    ]
+
+    domain_names = cfg.hostname
+    for i in range(len(cfg.acme_additional_domains)):
+        domain_names += f",{cfg.acme_additional_domains[i]}"
+
+    acme = constellation.ConstellationContainer(
+        name,
+        cfg.acme_buddy_ref,
+        ports=[cfg.acme_buddy_port],
+        mounts=acme_mounts,
+        environment=acme_env,
+        args=[
+            "--domain",
+            domain_names,
+            "--email",
+            cfg.acme_buddy_email,
+            "--dns-provider",
+            "hdb",
+            "--certificate-path",
+            "/tls/certificate.pem",
+            "--key-path",
+            "/tls/key.pem",
+            "--account-path",
+            "/tls/account.json",
+            "--reload-container",
+            proxy.name_external(cfg.container_prefix),
+        ],
+    )
+    return acme
 
 
 def db_container(cfg):
@@ -215,10 +264,7 @@ def proxy_container(cfg):
     if cfg.ssl_mode == "acme":
         mounts.extend(
             [
-                constellation.ConstellationVolumeMount(
-                    "acme-challenge", "/var/www/.well-known/acme-challenge", read_only=True
-                ),
-                constellation.ConstellationVolumeMount("certificates", "/etc/montagu/proxy"),
+                constellation.ConstellationVolumeMount("montagu-tls", "/etc/montagu/proxy"),
             ]
         )
 
@@ -227,29 +273,8 @@ def proxy_container(cfg):
         cfg.proxy_ref,
         ports=proxy_ports,
         args=[str(cfg.proxy_port_https), cfg.hostname],
-        preconfigure=proxy_preconfigure,
         mounts=mounts,
     )
-
-
-def proxy_update_certificate(container, cert, key, *, reload):
-    print("[proxy] Copying ssl certificate and key into proxy")
-    ssl_path = "/etc/montagu/proxy"
-    docker_util.string_into_container(cert, container, join(ssl_path, "certificate.pem"))
-    docker_util.string_into_container(key, container, join(ssl_path, "ssl_key.pem"))
-
-    if reload:
-        print("[proxy] Reloading nginx")
-        docker_util.exec_safely(container, "nginx -s reload")
-
-
-def proxy_preconfigure(container, cfg):
-    # In self-signed mode, the container generates its own certificate on its
-    # own. Similarly, in ACME mode, the container generates its own certificate
-    # and after starting we request a new one.
-    if cfg.ssl_mode == "static":
-        print("[proxy] Configuring reverse proxy")
-        proxy_update_certificate(container, cfg.ssl_certificate, cfg.ssl_key, reload=False)
 
 
 def proxy_metrics_container(cfg):

@@ -60,7 +60,7 @@ def test_parse_args():
 
 def test_version(capsys):
     cli.main(["--version"])
-    out, err = capsys.readouterr()
+    out, _err = capsys.readouterr()
     assert re.match(r"\d+\.\d+\.\d+", out)
 
 
@@ -102,16 +102,6 @@ def test_args_passed_to_configure():
 
     assert f.call_count == 1
     assert f.mock_calls[0] == mock.call("config/basic")
-
-
-def test_can_parse_extra_certbot_args():
-    res = cli.parse_args(["renew-certificate", "--name=config/basic", "--", "--force-renewal"])
-    assert res[0] == "config/basic"
-    assert res[1] is None
-    assert res[2] == []
-    args = res[3]
-    assert args.action == "renew-certificate"
-    assert args.extra_args == ["--force-renewal"]
 
 
 def test_verify_data_loss_called():

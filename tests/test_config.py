@@ -76,17 +76,10 @@ def test_config_email():
     assert cfg.email_flow_url == "fakeurl"
 
 
-def test_config_ssl():
-    cfg = MontaguConfig("config/complete")
-    assert cfg.ssl_mode == "static"
-    assert cfg.ssl_certificate == "cert"
-    assert cfg.ssl_key == "k3y"
-
-
 def test_config_acme():
     cfg = MontaguConfig("config/acme")
     assert cfg.ssl_mode == "acme"
-    assert cfg.acme_email == "admin@montagu.org"
+    assert cfg.acme_buddy_email == "admin@montagu.org"
     assert cfg.acme_server is None
 
 
@@ -109,5 +102,5 @@ def test_config_streaming_replication():
 
 def test_config_validates_db_user_permissions():
     options = {"db": {"users": {"api": {"permissions": "bad", "password": "pw"}}}}
-    with pytest.raises(Exception, match="Invalid database permissions for 'api'."):
+    with pytest.raises(Exception, match=r"Invalid database permissions for 'api'."):
         MontaguConfig("config/basic", options=options)

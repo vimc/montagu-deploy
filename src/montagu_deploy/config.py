@@ -56,8 +56,8 @@ class MontaguConfig:
         self.proxy_port_metrics = config.config_integer(dat, ["proxy", "port_metrics"], is_optional=True, default=9000)
         self.proxy_metrics_ref = self.build_ref(dat["proxy"], "metrics")
 
-        if "ssl" in dat["proxy"] and "acme" in dat["proxy"]:
-            msg = "Cannot specify both ssl and acme options in proxy options."
+        if "ssl" in dat["proxy"] and "acme_buddy" in dat:
+            msg = "Cannot specify both ssl in proxy and acme_buddy."
             raise Exception(msg)
         if "ssl" in dat["proxy"]:
             self.ssl_mode = "static"
@@ -65,12 +65,12 @@ class MontaguConfig:
             self.ssl_key = config.config_string(dat, ["proxy", "ssl", "key"])
         elif "acme" in dat["proxy"]:
             self.ssl_mode = "acme"
-            self.acme_email = config.config_string(dat, ["proxy", "acme", "email"])
-            self.acme_server = config.config_string(dat, ["proxy", "acme", "server"], is_optional=True)
-            self.acme_no_verify_ssl = config.config_boolean(dat, ["proxy", "acme", "no_verify_ssl"], is_optional=True)
-            self.acme_additional_domains = config.config_list(
-                dat, ["proxy", "acme", "additional_domains"], is_optional=True, default=[]
-            )
+            self.acme_buddy_ref = self.build_ref(dat, "acme_buddy")
+            self.acme_buddy_port = config.config_integer(dat, ["acme_buddy", "port"])
+            self.acme_buddy_hdb_username = config.config_string(dat, ["acme_buddy", "hdb_username"])
+            self.acme_buddy_hdb_password = config.config_string(dat, ["acme_buddy", "hdb_password"])
+            self.acme_buddy_email = config.config_string(dat, ["acme_buddy", "email"])
+            self.acme_additional_domains = config.config_list(dat, ["acme_buddy", "additional_domains"])
         else:
             self.ssl_mode = "self-signed"
 
@@ -106,6 +106,9 @@ class MontaguConfig:
         if self.fake_smtp_ref:
             self.containers["fake_smtp"] = "fake-smtp"
 
+        if self.ssl_mode == "acme":
+            self.containers["acme-buddy"] = "acme-buddy"
+
         self.images = {
             "db": self.db_ref,
             "api": self.api_ref,
@@ -122,6 +125,9 @@ class MontaguConfig:
 
         if self.fake_smtp_ref:
             self.images["fake_smtp"] = self.fake_smtp_ref
+
+        if self.ssl_mode == "acme":
+            self.images["acme-buddy"] = self.acme_buddy_ref
 
     def build_ref(self, dat, section):
         name = config.config_string(dat, [section, "name"])
