@@ -150,3 +150,22 @@ def add_task_queue_user(cfg, packit):
 
     admin.add_user(cfg, "task.queue", "task.queue", "montagu-task@imperial.ac.uk", "password")
     admin.add_role_to_user(cfg, "task.queue", "user")
+
+def test_acme():
+    path = "config/acme"
+    try:
+        with vault_dev.Server() as s:
+            url = f"http://localhost:{s.port}"
+            options = {"vault": {"addr": url, "auth": {"args": {"token": s.token}}}}
+            s.client().write("secret/certbot-hdb/credentials", username="hdb-us3r", password="hdb-p@assword")
+
+            cli.main(["start", "--name", path])
+            client = docker.client.from_env()
+            container = client.containers.get("montagu-acme-buddy")
+            env = container.attrs["Config"]["Env"]
+            env_dict = dict(e.split("=", 1) for e in env)
+            assert "hdb-us3r" in env_dict["HDB_ACME_USERNAME"]
+            assert "hdb-p@assword" in env_dict["HDB_ACME_PASSWORD"]
+
+    finally:
+        cli.main(["stop", "--name", path, "--kill", "--volumes", "--network"])
