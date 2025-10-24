@@ -153,11 +153,16 @@ def add_task_queue_user(cfg, packit):
 
 
 def test_acme():
+    packit_config_path = "tests"
     path = "config/acme"
+    packit_config = PackitConfig(packit_config_path)
     try:
-        with vault_dev.Server() as s:
-            s.client().write("secret/certbot-hdb/credentials", username="hdb-us3r", password="hdb-p@assword")
+        with vault_dev.Server(export_token=True) as s:
+            cl = s.client()
+            cl.write("secret/certbot-hdb/credentials", username="hdb-us3r", password="hdb-p@assword")
             vault_addr = f"http://localhost:{s.port}"
+            packit = PackitConstellation(packit_config)
+            packit.start(pull_images=True)
             cli.main(
                 [
                     "start",
@@ -175,4 +180,7 @@ def test_acme():
             assert "hdb-p@assword" in env_dict["HDB_ACME_PASSWORD"]
 
     finally:
-        cli.main(["stop", "--name", path, "--kill", "--volumes", "--network"])
+        with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
+            prompt.return_value = True
+            PackitConstellation(packit_config).stop(kill=True)
+            cli.main(["stop", "--name", path, "--kill", "--volumes", "--network"])
