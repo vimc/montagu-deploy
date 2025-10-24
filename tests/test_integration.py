@@ -158,8 +158,15 @@ def test_acme():
             url = f"http://localhost:{s.port}"
             options = {"vault": {"addr": url, "auth": {"args": {"token": s.token}}}}
             s.client().write("secret/certbot-hdb/credentials", username="hdb-us3r", password="hdb-p@assword")
-
-            cli.main(["start", "--name", path])
+            cli.main(
+                [
+                    "start",
+                    "--name",
+                    path,
+                    f"--option=vault.addr={vault_addr}",
+                    f"--option=vault.auth.args.token={s.token}",
+                ]
+            )
             client = docker.client.from_env()
             container = client.containers.get("montagu-acme-buddy")
             env = container.attrs["Config"]["Env"]
