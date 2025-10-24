@@ -155,7 +155,6 @@ def test_acme():
     path = "config/acme"
     try:
         with vault_dev.Server() as s:
-            url = f"http://localhost:{s.port}"
             s.client().write("secret/certbot-hdb/credentials", username="hdb-us3r", password="hdb-p@assword")
             vault_addr = f"http://localhost:{s.port}"
             cli.main(
