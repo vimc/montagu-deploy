@@ -150,5 +150,10 @@ def test_acme_buddy():
     try:
         obj.start()
         acme = get_container(cfg, "acme-buddy")
+        env = acme.attrs["Config"]["Env"]
+        env_dict = dict(e.split("=", 1) for e in env)
+        assert "HDB_ACME_USERNAME" in env_dict
+        assert "HDB_ACME_PASSWORD" in env_dict
+
     finally:
         obj.stop(kill=True)
