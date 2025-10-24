@@ -151,6 +151,7 @@ def add_task_queue_user(cfg, packit):
     admin.add_user(cfg, "task.queue", "task.queue", "montagu-task@imperial.ac.uk", "password")
     admin.add_role_to_user(cfg, "task.queue", "user")
 
+
 def test_acme():
     path = "config/acme"
     try:
