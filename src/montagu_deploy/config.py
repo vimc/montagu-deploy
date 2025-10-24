@@ -56,14 +56,7 @@ class MontaguConfig:
         self.proxy_port_metrics = config.config_integer(dat, ["proxy", "port_metrics"], is_optional=True, default=9000)
         self.proxy_metrics_ref = self.build_ref(dat["proxy"], "metrics")
 
-        if "ssl" in dat["proxy"] and "acme_buddy" in dat:
-            msg = "Cannot specify both ssl in proxy and acme_buddy."
-            raise Exception(msg)
-        if "ssl" in dat["proxy"]:
-            self.ssl_mode = "static"
-            self.ssl_certificate = config.config_string(dat, ["proxy", "ssl", "certificate"])
-            self.ssl_key = config.config_string(dat, ["proxy", "ssl", "key"])
-        elif "acme_buddy" in dat:
+        if "acme_buddy" in dat:
             self.ssl_mode = "acme"
             self.acme_buddy_ref = self.build_ref(dat, "acme_buddy")
             self.acme_buddy_port = config.config_integer(dat, ["acme_buddy", "port"])
