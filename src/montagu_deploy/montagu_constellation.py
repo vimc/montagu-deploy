@@ -4,13 +4,16 @@ from os.path import join
 import constellation
 import docker
 import yaml
-from constellation import docker_util
+from constellation import docker_util, vault
 from psycopg2 import connect
 
 from montagu_deploy import database
 
 
 def montagu_constellation(cfg):
+    if cfg.vault and cfg.vault.url:
+        vault.resolve_secrets(cfg, cfg.vault.client())
+
     proxy = proxy_container(cfg)
     containers = [
         api_container(cfg),
@@ -24,13 +27,13 @@ def montagu_constellation(cfg):
         task_queue_container(cfg),
     ]
 
-    if cfg.ssl_mode == "acme":
-        acme_buddy = acme_buddy_container(cfg, proxy)
-        containers.append(acme_buddy)
-
     if cfg.fake_smtp_ref:
         fake_smtp = fake_smtp_container(cfg)
         containers.append(fake_smtp)
+
+    if cfg.ssl_mode == "acme":
+        acme_buddy = acme_buddy_container(cfg, proxy)
+        containers.append(acme_buddy)
 
     return constellation.Constellation(
         "montagu", cfg.container_prefix, containers, cfg.network, cfg.volumes, data=cfg, vault_config=cfg.vault

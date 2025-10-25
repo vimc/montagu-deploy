@@ -30,7 +30,7 @@ repo: vimc
 network: montagu-network
 
 # Domain where this instance of Montagu will be deployed. E.g. science.montagu.dide.ic.uk
-hostname: montagu.org
+hostname: localhost
 
 ## Names of the docker volumes to use
 volumes:

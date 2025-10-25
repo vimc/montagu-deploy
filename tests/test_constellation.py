@@ -139,21 +139,3 @@ def test_metrics():
 def get_container(cfg, name):
     cl = docker.client.from_env()
     return cl.containers.get(f"{cfg.container_prefix}-{cfg.containers[name]}")
-
-
-def test_acme_buddy():
-    cfg = MontaguConfig("config/acme")
-    obj = montagu_constellation(cfg)
-    assert cfg.ssl_mode == "acme"
-    assert "acme-buddy" in cfg.containers
-    assert "acme-buddy" in cfg.images
-    try:
-        obj.start()
-        acme = get_container(cfg, "acme-buddy")
-        env = acme.attrs["Config"]["Env"]
-        env_dict = dict(e.split("=", 1) for e in env)
-        assert "HDB_ACME_USERNAME" in env_dict
-        assert "HDB_ACME_PASSWORD" in env_dict
-
-    finally:
-        obj.stop(kill=True)

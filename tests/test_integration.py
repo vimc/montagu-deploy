@@ -153,23 +153,19 @@ def add_task_queue_user(cfg, packit):
 
 
 def test_acme():
-    packit_config_path = "tests"
-    path = "config/acme"
-    packit_config = PackitConfig(packit_config_path)
     try:
         with vault_dev.Server(export_token=True) as s:
+            path = "config/acme"
             cl = s.client()
             cl.write("secret/certbot-hdb/credentials", username="hdb-us3r", password="hdb-p@assword")
             vault_addr = f"http://localhost:{s.port}"
-            packit = PackitConstellation(packit_config)
-            packit.start(pull_images=True)
             cli.main(
                 [
                     "start",
                     "--name",
                     path,
-                    f"--option=vault.addr={vault_addr}",
                     f"--option=vault.auth.args.token={s.token}",
+                    f"--option=vault.addr={vault_addr}",
                 ]
             )
             client = docker.client.from_env()
@@ -182,5 +178,15 @@ def test_acme():
     finally:
         with mock.patch("src.montagu_deploy.cli.prompt_yes_no") as prompt:
             prompt.return_value = True
-            PackitConstellation(packit_config).stop(kill=True)
-            cli.main(["stop", "--name", path, "--kill", "--volumes", "--network"])
+            cli.main(
+                [
+                    "stop",
+                    "--name",
+                    path,
+                    f"--option=vault.auth.args.token={s.token}",
+                    f"--option=vault.addr={vault_addr}",
+                    "--kill",
+                    "--volumes",
+                    "--network",
+                ]
+            )
