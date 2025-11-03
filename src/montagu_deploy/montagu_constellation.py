@@ -114,9 +114,7 @@ def acme_buddy_container(cfg, proxy):
         constellation.ConstellationBindMount("/var/run/docker.sock", "/var/run/docker.sock"),
     ]
 
-    domain_names = cfg.hostname
-    for i in range(len(cfg.acme_additional_domains)):
-        domain_names += f",{cfg.acme_additional_domains[i]}"
+    domain_names = ",".join([cfg.hostname] + cfg.acme_additional_domains)
 
     acme = constellation.ConstellationContainer(
         name,
